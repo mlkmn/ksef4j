@@ -1,6 +1,6 @@
 # Bundled KSeF environment certificates
 
-Six certificates are bundled, one per (environment, KSeF usage) pair. All were sourced from each environment's `GET https://<host>/v2/security/public-key-certificates` endpoint and selected by their `usage` field.
+Six encryption certificates are bundled, one per (environment, KSeF usage) pair (the three UPO-signing certificates are covered in a separate section below, for nine bundled certificates in total). All were sourced from each environment's `GET https://<host>/v2/security/public-key-certificates` endpoint and selected by their `usage` field.
 
 | File | Environment | Usage (KSeF field) | Purpose in ksef4j | Retrieved |
 |---|---|---|---|---|
@@ -27,7 +27,7 @@ All six certificates share the same issuer chain and validity window:
 
 ## Certificate rotation and dynamic refresh
 
-KSeF rotates these certificates; each carries an expiry date (currently 2027-09-29 for all six). `HttpCertificateResolver` (planned) refreshes them dynamically near expiry by fetching the live `/v2/security/public-key-certificates` endpoint, so the bundled files serve as a fast offline default rather than the only source. When KSeF publishes new certificates before the planned dynamic resolver is available, replace the corresponding `.pem` files and re-bundle.
+KSeF rotates these certificates; each carries an expiry date (currently 2027-09-29 for all six). The default `HttpCertificateResolver` refreshes them dynamically near expiry by fetching the live `/v2/security/public-key-certificates` endpoint, so the bundled files serve as a fast offline default rather than the only source; `ClasspathKeyResolver` is the pure-offline alternative that uses only these bundled files. A build-time test (`BundledCertificateExpiryTest`) fails ~180 days before any bundled certificate expires, so a needed refresh cannot pass unnoticed. When KSeF publishes new certificates, replace the corresponding `.pem` files and re-bundle.
 
 ## UPO-signing certificates
 

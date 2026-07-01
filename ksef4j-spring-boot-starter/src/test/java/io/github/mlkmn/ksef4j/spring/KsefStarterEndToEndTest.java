@@ -7,7 +7,7 @@ import io.github.mlkmn.ksef4j.SendResult;
 import io.github.mlkmn.ksef4j.Upo;
 import io.github.mlkmn.ksef4j.invoice.InvoiceFixtures;
 import io.github.mlkmn.ksef4j.test.MockKsef;
-import io.github.mlkmn.ksef4j.test.internal.KsefPayloads;
+import io.github.mlkmn.ksef4j.test.MockKsefDefaults;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import org.junit.jupiter.api.Test;
@@ -39,12 +39,12 @@ class KsefStarterEndToEndTest {
                 try (SendResult result = client.send(InvoiceFixtures.singleLineVat23())) {
                   upo = result.awaitUpo();
                 }
-                assertThat(upo.ksefReferenceNumber()).isEqualTo(KsefPayloads.KSEF_NUMBER);
+                assertThat(upo.ksefNumber()).isEqualTo(MockKsefDefaults.KSEF_NUMBER);
                 assertThat(
                         Files.exists(
                             archiveDir
                                 .resolve(NIP)
-                                .resolve(KsefPayloads.KSEF_NUMBER)
+                                .resolve(MockKsefDefaults.KSEF_NUMBER)
                                 .resolve("metadata.json")))
                     .isTrue();
               });

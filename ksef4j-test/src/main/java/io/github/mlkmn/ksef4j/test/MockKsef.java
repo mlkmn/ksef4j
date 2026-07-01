@@ -63,7 +63,7 @@ public final class MockKsef implements AutoCloseable {
         post(urlEqualTo("/auth/token/redeem")).willReturn(okJson(KsefPayloads.TOKEN_REDEEM)));
 
     // Send flow defaults.
-    String sess = KsefPayloads.SESSION_REF;
+    String sess = MockKsefDefaults.SESSION_REF;
     server.stubFor(
         post(urlEqualTo("/sessions/online")).willReturn(okJson(KsefPayloads.OPEN_SESSION)));
     server.stubFor(
@@ -75,11 +75,11 @@ public final class MockKsef implements AutoCloseable {
 
     // Per-invoice status: immediately accepted (phase 1 of the UPO poller).
     server.stubFor(
-        get(urlEqualTo("/sessions/" + sess + "/invoices/" + KsefPayloads.INVOICE_REF))
+        get(urlEqualTo("/sessions/" + sess + "/invoices/" + MockKsefDefaults.INVOICE_REF))
             .willReturn(okJson(KsefPayloads.invoiceAccepted())));
 
     // Session status flips in-progress -> UPO-ready across two poll calls (phase 2).
-    String upoUrl = server.baseUrl() + "/upo/" + KsefPayloads.UPO_PAGE_REF;
+    String upoUrl = server.baseUrl() + "/upo/" + MockKsefDefaults.UPO_PAGE_REF;
     server.stubFor(
         get(urlEqualTo("/sessions/" + sess))
             .inScenario("upo")
@@ -94,7 +94,7 @@ public final class MockKsef implements AutoCloseable {
 
     // UPO download: the echo transformer fills SkrotDokumentu from the submitted invoiceHash.
     server.stubFor(
-        get(urlEqualTo("/upo/" + KsefPayloads.UPO_PAGE_REF))
+        get(urlEqualTo("/upo/" + MockKsefDefaults.UPO_PAGE_REF))
             .willReturn(
                 aResponse()
                     .withStatus(200)
@@ -122,18 +122,9 @@ public final class MockKsef implements AutoCloseable {
     return new QueryScenario(server);
   }
 
-  /**
-   * Override the UPO download response with a fixed XML body (bypasses the hash-echo transformer).
-   * Useful for testing UPO integrity-check failures.
-   */
-  public void stubUpoXml(String xml) {
-    server.stubFor(
-        get(urlEqualTo("/upo/" + KsefPayloads.UPO_PAGE_REF))
-            .willReturn(
-                aResponse()
-                    .withStatus(200)
-                    .withHeader("Content-Type", "application/xml")
-                    .withBody(xml)));
+  /** Returns a {@link UpoScenario} for scripting the UPO document the mock serves. */
+  public UpoScenario onUpo() {
+    return new UpoScenario(server);
   }
 
   /** Returns a {@link SendScenario} for scripting the next invoice-send response. */
@@ -160,14 +151,17 @@ public final class MockKsef implements AutoCloseable {
     return server
         .findAll(
             postRequestedFor(
-                urlEqualTo("/sessions/online/" + KsefPayloads.SESSION_REF + "/invoices")))
+                urlEqualTo("/sessions/online/" + MockKsefDefaults.SESSION_REF + "/invoices")))
         .stream()
         .map(
             r -> {
               try {
                 return mapper.readTree(r.getBodyAsString()).path("invoiceHash").asText("");
               } catch (Exception e) {
-                return "";
+                throw new IllegalStateException(
+                    "Mock received a send request whose body is not valid JSON: "
+                        + r.getBodyAsString(),
+                    e);
               }
             })
         .toList();
@@ -179,25 +173,21 @@ public final class MockKsef implements AutoCloseable {
   }
 
   /**
-   * All request paths received by the mock, in chronological order. Useful for {@code
-   * containsSubsequence} assertions on the full request flow.
+   * All request URLs (path plus any query string) received by the mock, in chronological order.
+   * Useful for {@code containsSubsequence} assertions on the full request flow.
    */
-  public List<String> requestedPaths() {
+  public List<String> requestedUrls() {
     List<ServeEvent> events = server.getAllServeEvents();
     // getAllServeEvents() returns newest-first; reverse to get chronological order.
     return events.reversed().stream().map(ServeEvent::getRequest).map(r -> r.getUrl()).toList();
   }
 
   /**
-   * Headers of the first request the mock received for {@code path} (exact-path match). Returns an
-   * empty map if no such request was recorded.
+   * Headers of the first request the mock received for {@code path} (path-only match, consistent
+   * with requestCount). Returns an empty map if no such request was recorded.
    */
   public Map<String, String> firstRequestHeaders(String path) {
-    List<ServeEvent> events = server.getAllServeEvents();
-    // getAllServeEvents() returns newest-first; reverse to get chronological order.
-    return events.reversed().stream()
-        .map(ServeEvent::getRequest)
-        .filter(r -> r.getUrl().equals(path))
+    return server.findAll(anyRequestedFor(urlPathEqualTo(path))).stream()
         .findFirst()
         .map(
             r -> {

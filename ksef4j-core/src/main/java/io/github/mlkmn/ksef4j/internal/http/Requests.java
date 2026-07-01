@@ -13,6 +13,11 @@ import java.util.List;
 /**
  * Internal: KSeF v2 request wire DTOs. The static factories perform the Base64 mapping from the
  * crypto layer's neutral byte outputs. Not supported API.
+ *
+ * <p>Kept in the same package as the sibling {@link Responses}, whose {@code QueryMetadata} shape
+ * is deliberately coupled to {@code ksef4j-test}'s {@code QueryWire} (a compile-time anti-drift
+ * decision, see PR #28); these request DTOs have no such external dependent today but should be
+ * refactored with the same care given the shared package boundary.
  */
 public final class Requests {
 

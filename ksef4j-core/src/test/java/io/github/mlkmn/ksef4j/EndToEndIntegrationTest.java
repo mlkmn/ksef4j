@@ -7,7 +7,7 @@ import io.github.mlkmn.ksef4j.error.KsefBusinessException;
 import io.github.mlkmn.ksef4j.error.UpoVerificationException;
 import io.github.mlkmn.ksef4j.invoice.InvoiceFixtures;
 import io.github.mlkmn.ksef4j.test.MockKsef;
-import io.github.mlkmn.ksef4j.test.internal.KsefPayloads;
+import io.github.mlkmn.ksef4j.test.MockKsefDefaults;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -34,22 +34,23 @@ class EndToEndIntegrationTest {
 
       Upo upo;
       try (SendResult result = client.send(InvoiceFixtures.singleLineVat23())) {
-        assertThat(result.invoiceReferenceNumber()).isEqualTo(KsefPayloads.INVOICE_REF);
+        assertThat(result.invoiceReferenceNumber()).isEqualTo(MockKsefDefaults.INVOICE_REF);
         upo = result.awaitUpo();
       }
 
-      assertThat(upo.ksefReferenceNumber()).isEqualTo(KsefPayloads.KSEF_NUMBER);
-      assertThat(upo.upoReferenceNumber()).isEqualTo(KsefPayloads.UPO_PAGE_REF);
-      assertThat(upo.issuedAt()).isEqualTo(Instant.parse(KsefPayloads.UPO_ISSUED_AT));
-      assertThat(new String(upo.xml(), StandardCharsets.UTF_8)).contains(KsefPayloads.KSEF_NUMBER);
+      assertThat(upo.ksefNumber()).isEqualTo(MockKsefDefaults.KSEF_NUMBER);
+      assertThat(upo.upoReferenceNumber()).isEqualTo(MockKsefDefaults.UPO_PAGE_REF);
+      assertThat(upo.issuedAt()).isEqualTo(Instant.parse(MockKsefDefaults.UPO_ISSUED_AT));
+      assertThat(new String(upo.xml(), StandardCharsets.UTF_8))
+          .contains(MockKsefDefaults.KSEF_NUMBER);
 
-      Path entryDir = archiveDir.resolve(NIP).resolve(KsefPayloads.KSEF_NUMBER);
+      Path entryDir = archiveDir.resolve(NIP).resolve(MockKsefDefaults.KSEF_NUMBER);
       assertThat(entryDir.resolve("fa3.xml")).exists();
       assertThat(entryDir.resolve("upo.xml")).exists();
       assertThat(entryDir.resolve("metadata.json")).exists();
       assertThat(Files.readAllBytes(entryDir.resolve("upo.xml"))).isEqualTo(upo.xml());
 
-      List<String> paths = mock.requestedPaths();
+      List<String> paths = mock.requestedUrls();
       assertThat(paths)
           .containsSubsequence(
               "/auth/challenge",
@@ -57,14 +58,17 @@ class EndToEndIntegrationTest {
               "/auth/REF1",
               "/auth/token/redeem",
               "/sessions/online",
-              "/sessions/online/" + KsefPayloads.SESSION_REF + "/invoices",
-              "/sessions/online/" + KsefPayloads.SESSION_REF + "/close",
-              "/sessions/" + KsefPayloads.SESSION_REF + "/invoices/" + KsefPayloads.INVOICE_REF,
-              "/sessions/" + KsefPayloads.SESSION_REF,
-              "/sessions/" + KsefPayloads.SESSION_REF,
-              "/upo/" + KsefPayloads.UPO_PAGE_REF);
+              "/sessions/online/" + MockKsefDefaults.SESSION_REF + "/invoices",
+              "/sessions/online/" + MockKsefDefaults.SESSION_REF + "/close",
+              "/sessions/"
+                  + MockKsefDefaults.SESSION_REF
+                  + "/invoices/"
+                  + MockKsefDefaults.INVOICE_REF,
+              "/sessions/" + MockKsefDefaults.SESSION_REF,
+              "/sessions/" + MockKsefDefaults.SESSION_REF,
+              "/upo/" + MockKsefDefaults.UPO_PAGE_REF);
       assertThat(paths)
-          .filteredOn(("/sessions/" + KsefPayloads.SESSION_REF)::equals)
+          .filteredOn(("/sessions/" + MockKsefDefaults.SESSION_REF)::equals)
           .hasSizeGreaterThanOrEqualTo(2);
 
       assertThat(mock.firstRequestHeaders("/sessions/online")).containsKey("authorization");
@@ -90,8 +94,8 @@ class EndToEndIntegrationTest {
           .hasMessageContaining("21401");
 
       // Best-effort session close was still attempted after the failed send.
-      List<String> paths = mock.requestedPaths();
-      assertThat(paths).contains("/sessions/online/" + KsefPayloads.SESSION_REF + "/close");
+      List<String> paths = mock.requestedUrls();
+      assertThat(paths).contains("/sessions/online/" + MockKsefDefaults.SESSION_REF + "/close");
 
       // Nothing archived on failure (archive happens only during awaitUpo()).
       assertThat(archiveDir.resolve(NIP)).doesNotExist();
@@ -114,15 +118,12 @@ class EndToEndIntegrationTest {
         upo = result.awaitUpo();
       }
 
-      Path entryDir = archiveDir.resolve(NIP).resolve(upo.ksefReferenceNumber());
+      Path entryDir = archiveDir.resolve(NIP).resolve(upo.ksefNumber());
       String fa3 = Files.readString(entryDir.resolve("fa3.xml"));
       assertThat(fa3).contains("EUR").contains("KursWalutyZ");
       assertThat(Files.size(entryDir.resolve("upo.xml"))).isPositive();
       String metadata = Files.readString(entryDir.resolve("metadata.json"));
-      assertThat(metadata)
-          .contains(upo.ksefReferenceNumber())
-          .contains(upo.documentHash())
-          .contains(NIP);
+      assertThat(metadata).contains(upo.ksefNumber()).contains(upo.documentHash()).contains(NIP);
     }
   }
 
@@ -131,8 +132,9 @@ class EndToEndIntegrationTest {
       throws Exception {
     try (MockKsef mock = MockKsef.create()) {
       // Override the UPO with a wrong document hash.
-      mock.stubUpoXml(
-          """
+      mock.onUpo()
+          .returnsXml(
+              """
               <?xml version="1.0" encoding="UTF-8"?>
               <Potwierdzenie xmlns="http://upo.schematy.mf.gov.pl/KSeF/v4-3">
                 <Dokument>
@@ -143,7 +145,7 @@ class EndToEndIntegrationTest {
                 </Dokument>
               </Potwierdzenie>
               """
-              .formatted(KsefPayloads.KSEF_NUMBER, KsefPayloads.UPO_ISSUED_AT));
+                  .formatted(MockKsefDefaults.KSEF_NUMBER, MockKsefDefaults.UPO_ISSUED_AT));
 
       KsefClient client =
           KsefClient.builder()

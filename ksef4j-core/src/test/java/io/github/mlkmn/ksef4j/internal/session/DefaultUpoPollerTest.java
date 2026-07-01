@@ -51,7 +51,7 @@ class DefaultUpoPollerTest {
 
     Upo upo = poller.pollUntilSettled(SESSION, INVOICE, ACCESS, Duration.ofSeconds(30));
 
-    assertThat(upo.ksefReferenceNumber()).isEqualTo("KSEF-123");
+    assertThat(upo.ksefNumber()).isEqualTo("KSEF-123");
     assertThat(upo.upoReferenceNumber()).isEqualTo("UPOREF1");
     assertThat(upo.issuedAt()).isEqualTo(Instant.parse("2026-06-28T10:01:00Z"));
     assertThat(upo.xml()).isEqualTo(UPO_XML);
@@ -67,7 +67,7 @@ class DefaultUpoPollerTest {
 
     Upo upo = poller.pollUntilSettled(SESSION, INVOICE, ACCESS, Duration.ofSeconds(30));
 
-    assertThat(upo.ksefReferenceNumber()).isEqualTo("KSEF-123");
+    assertThat(upo.ksefNumber()).isEqualTo("KSEF-123");
     assertThat(transport.sessionStatusCount.get()).isEqualTo(3);
     assertThat(clock.instant()).isEqualTo(START.plusSeconds(2)); // two 1s backoff waits
   }
@@ -162,7 +162,7 @@ class DefaultUpoPollerTest {
 
     Upo upo = poller.pollUntilSettled(SESSION, INVOICE, ACCESS, Duration.ofSeconds(30));
 
-    assertThat(upo.ksefReferenceNumber()).isEqualTo("KSEF-123");
+    assertThat(upo.ksefNumber()).isEqualTo("KSEF-123");
     assertThat(transport.invoiceStatusCount.get()).isEqualTo(2);
   }
 

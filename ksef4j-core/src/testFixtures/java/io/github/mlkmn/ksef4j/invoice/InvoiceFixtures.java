@@ -4,7 +4,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
-/** Programmatic Invoice fixtures shared between Wave A1 tests. */
+/** Programmatic Invoice fixtures shared across tests. */
 public final class InvoiceFixtures {
 
   private static final Address SELLER_ADDRESS =

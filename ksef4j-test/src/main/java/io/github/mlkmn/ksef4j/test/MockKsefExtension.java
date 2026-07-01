@@ -53,12 +53,9 @@ public final class MockKsefExtension
     return mock.onSend();
   }
 
-  /**
-   * Override the UPO download response with a fixed XML body (bypasses the hash-echo transformer).
-   * Useful for testing UPO integrity-check failures.
-   */
-  public void stubUpoXml(String xml) {
-    mock.stubUpoXml(xml);
+  /** Returns a {@link UpoScenario} for scripting the UPO document the mock serves. */
+  public UpoScenario onUpo() {
+    return mock.onUpo();
   }
 
   /** Returns a {@link QueryScenario} for scripting the next query response. */
@@ -82,16 +79,16 @@ public final class MockKsefExtension
   }
 
   /**
-   * All request paths received by the mock, in chronological order. Useful for {@code
-   * containsSubsequence} assertions on the full request flow.
+   * All request URLs (path plus any query string) received by the mock, in chronological order.
+   * Useful for {@code containsSubsequence} assertions on the full request flow.
    */
-  public List<String> requestedPaths() {
-    return mock.requestedPaths();
+  public List<String> requestedUrls() {
+    return mock.requestedUrls();
   }
 
   /**
-   * Headers of the first request the mock received for {@code path} (exact-path match). Returns an
-   * empty map if no such request was recorded.
+   * Headers of the first request the mock received for {@code path} (path-only match, consistent
+   * with requestCount). Returns an empty map if no such request was recorded.
    */
   public Map<String, String> firstRequestHeaders(String path) {
     return mock.firstRequestHeaders(path);

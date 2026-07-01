@@ -1,6 +1,6 @@
 plugins {
     `java-library`
-    `maven-publish`
+    alias(libs.plugins.maven.publish.vanniktech)
 }
 
 description = "Spring Boot autoconfiguration for ksef4j"

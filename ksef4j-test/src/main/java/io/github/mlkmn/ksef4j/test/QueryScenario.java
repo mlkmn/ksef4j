@@ -35,6 +35,9 @@ public final class QueryScenario {
    * Script a multi-page query sequence: successive POST calls return successive raw JSON bodies.
    * Each body must be a complete query response JSON (with {@code hasMore} set correctly). At least
    * one body is required; the last body is served on every subsequent call.
+   *
+   * <p>This is the stringly-typed escape hatch for pagination/{@code hasMore} edge cases; for the
+   * common truncation case prefer the typed {@link #returnsTruncated(InvoiceMetadata...)}.
    */
   public void returnsRawPages(String firstPage, String... remainingPages) {
     server.stubFor(

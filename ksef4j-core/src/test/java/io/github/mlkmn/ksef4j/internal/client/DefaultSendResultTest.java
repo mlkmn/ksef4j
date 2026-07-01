@@ -64,7 +64,7 @@ class DefaultSendResultTest {
     assertThat(poller.lastTimeout).isEqualTo(POLL_TIMEOUT);
     assertThat(archive.stored).hasSize(1);
     ArchiveEntry entry = archive.stored.get(0);
-    assertThat(entry.key().ksefReferenceNumber()).isEqualTo("ksef-ref-9");
+    assertThat(entry.key().ksefNumber()).isEqualTo("ksef-ref-9");
     assertThat(entry.key().issuerNip()).isEqualTo("5260250274");
     assertThat(entry.sentAt()).isEqualTo(SENT_AT);
     assertThat(entry.fa3Xml()).isEqualTo(FA3);
@@ -208,7 +208,7 @@ class DefaultSendResultTest {
     Map<String, String> meta = archive.stored.get(0).metadata();
     assertThat(meta)
         .hasSize(6)
-        .containsEntry("ksefReferenceNumber", "ksef-ref-9")
+        .containsEntry("ksefNumber", "ksef-ref-9")
         .containsEntry("invoiceReferenceNumber", "invoice-1")
         .containsEntry("invoiceNumber", "FV/1")
         .containsEntry("documentHash", sha256Base64(FA3))

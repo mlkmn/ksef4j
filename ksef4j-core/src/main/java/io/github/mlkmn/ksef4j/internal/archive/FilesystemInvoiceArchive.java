@@ -18,7 +18,7 @@ import java.util.regex.Pattern;
 
 /**
  * Internal: filesystem {@link InvoiceArchive}. One directory per send, {@code
- * <root>/<issuerNip>/<ksefReferenceNumber>/}, holding {@code fa3.xml}, {@code upo.xml}, and {@code
+ * <root>/<issuerNip>/<ksefNumber>/}, holding {@code fa3.xml}, {@code upo.xml}, and {@code
  * metadata.json}. {@code metadata.json} is written last and is the commit marker. Holds only the
  * immutable root, so it is thread-safe to share across concurrent sends.
  */
@@ -77,7 +77,7 @@ public final class FilesystemInvoiceArchive implements InvoiceArchive {
 
   private Path entryDir(ArchiveKey key) {
     return root.resolve(safe(key.issuerNip(), "issuerNip"))
-        .resolve(safe(key.ksefReferenceNumber(), "ksefReferenceNumber"));
+        .resolve(safe(key.ksefNumber(), "ksefNumber"));
   }
 
   private static String safe(String segment, String field) {

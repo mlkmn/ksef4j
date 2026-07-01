@@ -81,12 +81,18 @@ public final class InvoiceValidator {
   }
 
   private static void checkSeller(Seller seller) {
+    if (seller == null) {
+      throw fail("Seller is required");
+    }
     checkNip("Seller NIP", seller.nip());
     checkName("Seller name", seller.name());
     checkAddress("Seller address", seller.address());
   }
 
   private static void checkBuyer(Buyer buyer) {
+    if (buyer == null) {
+      throw fail("Buyer is required");
+    }
     checkNip("Buyer NIP", buyer.nip());
     checkName("Buyer name", buyer.name());
     checkAddress("Buyer address", buyer.address());

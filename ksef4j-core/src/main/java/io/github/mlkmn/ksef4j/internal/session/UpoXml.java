@@ -18,8 +18,7 @@ final class UpoXml {
 
   private UpoXml() {}
 
-  record Parsed(
-      String ksefReferenceNumber, Instant issuedAt, String documentHash, String invoiceNumber) {}
+  record Parsed(String ksefNumber, Instant issuedAt, String documentHash, String invoiceNumber) {}
 
   static Parsed parse(byte[] xml) {
     Document doc;

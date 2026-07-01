@@ -1,6 +1,6 @@
 plugins {
     `java-library`
-    `maven-publish`
+    alias(libs.plugins.maven.publish.vanniktech)
     `java-test-fixtures`
     alias(libs.plugins.xjc)
 }
@@ -21,7 +21,7 @@ tasks.named<Copy>("processResources") {
     exclude("fa3/*.xjb")
 }
 
-tasks.named<Jar>("sourcesJar") {
+tasks.withType<Jar>().matching { it.name == "sourcesJar" }.configureEach {
     exclude("fa3/*.xjb")
 }
 
@@ -76,7 +76,13 @@ tasks.register<Test>("smokeTest") {
 }
 
 // Test fixtures are for in-repo tests only; never publish them as an artifact.
-(components["java"] as AdhocComponentWithVariants).let { java ->
-    java.withVariantsFromConfiguration(configurations["testFixturesApiElements"]) { skip() }
-    java.withVariantsFromConfiguration(configurations["testFixturesRuntimeElements"]) { skip() }
+// testFixturesSourcesElements is added later by the vanniktech plugin's withSourcesJar()
+// (applied across all source sets, including testFixtures), so the skip is deferred
+// to afterEvaluate to run once that configuration actually exists.
+afterEvaluate {
+    (components["java"] as AdhocComponentWithVariants).let { java ->
+        java.withVariantsFromConfiguration(configurations["testFixturesApiElements"]) { skip() }
+        java.withVariantsFromConfiguration(configurations["testFixturesRuntimeElements"]) { skip() }
+        java.withVariantsFromConfiguration(configurations["testFixturesSourcesElements"]) { skip() }
+    }
 }

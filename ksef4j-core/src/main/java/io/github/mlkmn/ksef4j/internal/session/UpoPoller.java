@@ -6,7 +6,6 @@ import java.time.Duration;
 
 /**
  * Internal seam: polls KSeF session status until the UPO is ready, then fetches and assembles it.
- * Implementation arrives in Wave B2.
  */
 public interface UpoPoller {
 

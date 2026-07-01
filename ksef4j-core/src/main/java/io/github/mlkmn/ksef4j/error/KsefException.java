@@ -10,7 +10,6 @@ public abstract sealed class KsefException extends RuntimeException
         KsefTransportException,
         KsefBusinessException,
         InvoiceValidationException,
-        UnsupportedInvoiceFeatureException,
         UpoTimeoutException,
         UpoVerificationException,
         ResultTruncatedException,

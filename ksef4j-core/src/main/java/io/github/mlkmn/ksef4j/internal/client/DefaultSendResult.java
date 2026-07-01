@@ -94,7 +94,7 @@ final class DefaultSendResult implements SendResult {
       LOG.log(
           Level.DEBUG,
           "UPO {0} carried no document hash; skipping integrity check",
-          upo.ksefReferenceNumber());
+          upo.ksefNumber());
       return;
     }
     String expected = sha256Base64(fa3Xml);
@@ -125,7 +125,7 @@ final class DefaultSendResult implements SendResult {
     try {
       archive.store(
           new ArchiveEntry(
-              new ArchiveKey(upo.ksefReferenceNumber(), issuerNip),
+              new ArchiveKey(upo.ksefNumber(), issuerNip),
               sentAt,
               fa3Xml,
               upo.xml(),
@@ -133,13 +133,13 @@ final class DefaultSendResult implements SendResult {
     } catch (ArchiveException e) {
       // KSeF already accepted the invoice (we hold the UPO); a local archive failure is
       // non-fatal per the InvoiceArchive contract. Log and still return the UPO.
-      LOG.log(Level.ERROR, "Failed to archive invoice " + upo.ksefReferenceNumber(), e);
+      LOG.log(Level.ERROR, "Failed to archive invoice " + upo.ksefNumber(), e);
     }
   }
 
   private Map<String, String> metadataFor(Upo upo) {
     Map<String, String> metadata = new LinkedHashMap<>();
-    metadata.put("ksefReferenceNumber", upo.ksefReferenceNumber());
+    metadata.put("ksefNumber", upo.ksefNumber());
     metadata.put("invoiceReferenceNumber", invoiceReferenceNumber);
     if (upo.invoiceNumber() != null) {
       metadata.put("invoiceNumber", upo.invoiceNumber());

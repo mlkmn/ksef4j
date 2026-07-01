@@ -22,7 +22,7 @@ class UpoXmlTest {
 
     UpoXml.Parsed parsed = UpoXml.parse(xml);
 
-    assertThat(parsed.ksefReferenceNumber()).isEqualTo("1234567890-20260628-ABCDEF-01");
+    assertThat(parsed.ksefNumber()).isEqualTo("1234567890-20260628-ABCDEF-01");
     assertThat(parsed.issuedAt()).isEqualTo(Instant.parse("2026-06-28T10:15:30Z"));
   }
 
@@ -65,7 +65,7 @@ class UpoXmlTest {
 
     UpoXml.Parsed parsed = UpoXml.parse(xml);
 
-    assertThat(parsed.ksefReferenceNumber()).isEqualTo("1111111111-20260629-FIXTURE000000-AA");
+    assertThat(parsed.ksefNumber()).isEqualTo("1111111111-20260629-FIXTURE000000-AA");
     assertThat(parsed.issuedAt()).isNotNull();
     assertThat(parsed.documentHash()).isEqualTo("RklYVFVSRS1IQVNILUJBU0U2NC1WQUxVRT09");
     assertThat(parsed.invoiceNumber()).isEqualTo("FV/FIXTURE/001");

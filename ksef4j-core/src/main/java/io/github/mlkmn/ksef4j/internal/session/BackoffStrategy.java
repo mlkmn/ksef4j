@@ -3,8 +3,8 @@ package io.github.mlkmn.ksef4j.internal.session;
 import java.time.Duration;
 
 /**
- * Internal seam: provides delay durations for retrying or polling operations. Default
- * implementation (Wave B2) is exponential with jitter.
+ * Internal seam: provides delay durations for retrying or polling operations. The default
+ * implementation is exponential with jitter.
  */
 public interface BackoffStrategy {
 

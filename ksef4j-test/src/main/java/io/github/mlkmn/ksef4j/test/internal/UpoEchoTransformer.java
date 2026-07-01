@@ -10,6 +10,7 @@ import com.github.tomakehurst.wiremock.extension.ResponseTransformerV2;
 import com.github.tomakehurst.wiremock.http.Response;
 import com.github.tomakehurst.wiremock.stubbing.ServeEvent;
 import com.github.tomakehurst.wiremock.verification.LoggedRequest;
+import io.github.mlkmn.ksef4j.test.MockKsefDefaults;
 import java.util.List;
 
 /**
@@ -33,7 +34,8 @@ public final class UpoEchoTransformer implements ResponseTransformerV2 {
         admin
             .findRequestsMatching(
                 postRequestedFor(
-                        urlEqualTo("/sessions/online/" + KsefPayloads.SESSION_REF + "/invoices"))
+                        urlEqualTo(
+                            "/sessions/online/" + MockKsefDefaults.SESSION_REF + "/invoices"))
                     .build())
             .getRequests();
     if (sends.isEmpty()) {

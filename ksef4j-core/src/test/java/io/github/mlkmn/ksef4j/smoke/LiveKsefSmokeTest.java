@@ -70,7 +70,7 @@ class LiveKsefSmokeTest {
     }
 
     assertThat(upo).isNotNull();
-    assertThat(upo.ksefReferenceNumber()).isNotBlank();
+    assertThat(upo.ksefNumber()).isNotBlank();
     assertThat(upo.issuedAt()).isNotNull();
     assertThat(upo.xml()).isNotEmpty();
 
@@ -82,7 +82,7 @@ class LiveKsefSmokeTest {
             + " cert");
 
     // Observed from the public result.
-    System.out.println("[smoke] KSeF reference number: " + upo.ksefReferenceNumber());
+    System.out.println("[smoke] KSeF reference number: " + upo.ksefNumber());
     System.out.println("[smoke] UPO reference number:  " + upo.upoReferenceNumber());
     System.out.println("[smoke] UPO issued at:         " + upo.issuedAt());
     System.out.println("[smoke] UPO XML size (bytes):  " + upo.xml().length);
@@ -122,11 +122,11 @@ class LiveKsefSmokeTest {
     }
 
     assertThat(upo).isNotNull();
-    assertThat(upo.ksefReferenceNumber()).isNotBlank();
+    assertThat(upo.ksefNumber()).isNotBlank();
     assertThat(upo.issuedAt()).isNotNull();
     assertThat(upo.xml()).isNotEmpty();
 
-    System.out.println("[smoke-eur] KSeF reference number: " + upo.ksefReferenceNumber());
+    System.out.println("[smoke-eur] KSeF reference number: " + upo.ksefNumber());
     System.out.println("[smoke-eur] UPO issued at:         " + upo.issuedAt());
     // The acceptance itself confirms KSeF took KodWaluty=EUR, KursWalutyZ, the
     // per-band P_14_xW VAT-in-PLN twin, the P_8A unit, and the PKWiU code.

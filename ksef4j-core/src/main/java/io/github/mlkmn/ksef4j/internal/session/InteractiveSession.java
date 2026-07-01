@@ -2,7 +2,7 @@ package io.github.mlkmn.ksef4j.internal.session;
 
 /**
  * Internal seam: sends one FA(3) invoice through a KSeF interactive session (open -> send -> close,
- * the order the UPO requires). Implementation in Wave B3.
+ * the order the UPO requires).
  */
 public interface InteractiveSession {
 

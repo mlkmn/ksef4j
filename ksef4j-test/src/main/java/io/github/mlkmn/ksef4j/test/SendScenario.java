@@ -18,7 +18,7 @@ public final class SendScenario {
   /** The next send is rejected with a KSeF business-error envelope (HTTP 400, given code). */
   public void reject(int code, String message) {
     server.stubFor(
-        post(urlEqualTo("/sessions/online/" + KsefPayloads.SESSION_REF + "/invoices"))
+        post(urlEqualTo("/sessions/online/" + MockKsefDefaults.SESSION_REF + "/invoices"))
             .willReturn(
                 aResponse()
                     .withStatus(400)

@@ -6,11 +6,11 @@ import java.util.Optional;
 /**
  * SPI for storing and retrieving sent-invoice records.
  *
- * <p><b>Experimental:</b> the v0.1 surface may evolve before v1.0. Callers and implementations
- * should expect at least source-compatible changes.
+ * <p><b>Experimental:</b> this SPI may still evolve; callers and implementations should expect at
+ * least source-compatible changes.
  *
- * <p>v0.1 ships {@code FilesystemInvoiceArchive} (per-NIP directory, files named by KSeF reference)
- * and {@code NoOpInvoiceArchive} (used when no directory is configured). Both arrive in Wave A5.
+ * <p>ksef4j ships {@code FilesystemInvoiceArchive} (per-NIP directory, files named by KSeF number)
+ * and {@code NoOpInvoiceArchive} (used when no directory is configured).
  */
 public interface InvoiceArchive {
 

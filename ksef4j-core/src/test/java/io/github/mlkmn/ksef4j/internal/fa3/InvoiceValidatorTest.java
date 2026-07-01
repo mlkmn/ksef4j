@@ -313,6 +313,44 @@ class InvoiceValidatorTest {
         .hasMessageContaining("VAT rate");
   }
 
+  @Test
+  void null_seller_is_rejected_without_npe() {
+    Invoice base = InvoiceFixtures.singleLineVat23();
+    Invoice invoice =
+        new Invoice(
+            base.invoiceNumber(),
+            base.issueDate(),
+            base.saleDate(),
+            base.currency(),
+            base.exchangeRate(),
+            null,
+            base.buyer(),
+            base.items());
+
+    assertThatThrownBy(() -> InvoiceValidator.validate(invoice))
+        .isInstanceOf(InvoiceValidationException.class)
+        .hasMessageContaining("Seller");
+  }
+
+  @Test
+  void null_buyer_is_rejected_without_npe() {
+    Invoice base = InvoiceFixtures.singleLineVat23();
+    Invoice invoice =
+        new Invoice(
+            base.invoiceNumber(),
+            base.issueDate(),
+            base.saleDate(),
+            base.currency(),
+            base.exchangeRate(),
+            base.seller(),
+            null,
+            base.items());
+
+    assertThatThrownBy(() -> InvoiceValidator.validate(invoice))
+        .isInstanceOf(InvoiceValidationException.class)
+        .hasMessageContaining("Buyer");
+  }
+
   // ---- Fixture helpers ----
 
   private static Invoice withCurrencyAndRate(String currency, BigDecimal rate) {

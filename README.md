@@ -6,7 +6,7 @@ An opinionated, Spring-Boot-first Java library for **KSeF 2.0** — Poland's Nat
 [![Java 21+](https://img.shields.io/badge/Java-21%2B-orange.svg)](https://openjdk.org/projects/jdk/21/)
 [![Spring Boot 4.0+](https://img.shields.io/badge/Spring_Boot-4.0%2B-6db33f.svg)](https://spring.io/projects/spring-boot)
 
-> **🚧 Pre-alpha — work in progress.** Not yet published to Maven Central. The API shown below is illustrative of the intended ergonomics and may change before the first release. Track [v0.1 milestone](#roadmap) for status.
+> **Available on Maven Central.** Add the dependency (see [Installation](#installation)) and send invoices. Apache-2.0.
 
 ---
 
@@ -18,7 +18,7 @@ It builds on top of the patterns established by the official Ministry of Finance
 
 ## Why ksef4j?
 
-- **Zero-friction installation.** Published to Maven Central — no GitHub Packages PAT, no custom repository configuration.
+- **Zero-friction install.** One Maven Central coordinate - no GitHub Packages PAT, no custom repository.
 - **Spring Boot starter included.** Autoconfiguration, sensible defaults, properties-driven setup. Drop in the dependency, set a token, send invoices.
 - **Framework-agnostic core.** `ksef4j-core` has no Spring dependency. Use it from plain Java, Quarkus, Micronaut, or anywhere else.
 - **Fluent, high-level API.** Build invoices from YAML templates or programmatically. Send with one method call. UPO retrieval handled.
@@ -32,7 +32,7 @@ It builds on top of the patterns established by the official Ministry of Finance
 
 ## Installation
 
-> Not yet published. The coordinates below reflect the planned first release (1.0.0); see the [roadmap](#roadmap) for what 1.0 includes.
+> Available on Maven Central as of 1.0.0 - add the dependency below, no extra repository configuration needed.
 
 ### Maven
 
@@ -108,7 +108,7 @@ public class InvoicingService {
     public void sendMonthlyInvoice(Path template) {
         var invoice = Invoice.fromYaml(template);
         var result  = ksef.send(invoice).awaitUpo();
-        // result.upoXml(), result.ksefReferenceNumber(), ...
+        // result.xml(), result.ksefNumber(), ...
     }
 }
 ```
@@ -197,7 +197,7 @@ The mock is WireMock-based and pulls WireMock only into your test classpath; `ks
 
 | Field | Type | Description |
 |---|---|---|
-| `ksefReferenceNumber` | `String` | KSeF-assigned reference for the accepted invoice |
+| `ksefNumber` | `String` | KSeF-assigned reference for the accepted invoice |
 | `upoReferenceNumber` | `String` | KSeF-assigned reference for the UPO document itself |
 | `issuedAt` | `Instant` | Instant the UPO was issued (UTC) |
 | `documentHash` | `String` | Base64 SHA-256 of the sent FA(3) document, sourced from the UPO's `SkrotDokumentu`; `null` if the UPO omits it |
@@ -321,22 +321,24 @@ Full configuration reference for the Spring Boot starter:
 
 ## Features
 
-### v0.1 (in development)
+### Shipped (v0.1-v0.5)
 
 - KSeF token authentication (challenge → encrypt → access token)
 - Invoice loading from YAML
-- Local FA(3) validation against XSD
+- Hand-coded FA(3) invoice validation (InvoiceValidator); opt-in XSD schema check via the validateFixtures Gradle task
 - Single-invoice send via interactive session
 - UPO polling with configurable timeout
-- UPO Ministry signature verification (opt-in, `verifyUpoSignature(true)`; TEST and DEMO certs bundled)
+- UPO Ministry signature verification (opt-in, `verifyUpoSignature(true)`; TEST, DEMO, and PROD certs bundled)
 - Local archive of sent invoices and UPOs
 - Spring Boot autoconfiguration
 - Environment switching (test, demo, prod)
+- Invoice metadata query (seller/buyer, date-ranged)
+- Single-invoice download by KSeF number
+- Type-safe fluent Invoice builder with validate-on-build
+- Mock KSeF server for downstream tests (ksef4j-test)
 
 ### Planned
 
-- Type-safe FA(3) builder with XSD-driven compile-time validation
-- Embedded mock server and test fixtures (`@KsefMockTest`)
 - Resilience patterns (retry, idempotency keys, backoff)
 - CLI: `ksef send`, `ksef validate`, `ksef list-invoices`
 - Offline mode with [Latarnia](https://api-latarnia.ksef.mf.gov.pl) integration
@@ -355,25 +357,24 @@ Full configuration reference for the Spring Boot starter:
 | v0.3    | Test support: mock KSeF server (shipped)           |
 | v0.4    | Read: invoice download (shipped)                   |
 | v0.5    | Type-safe invoice builder (shipped)                |
-| v0.6    | CLI: `ksef send`, `ksef validate`, `ksef list-invoices` |
-| v0.7    | Format converters (FA(3) -> PDF/HTML and friends)  |
-| 1.0     | Stable send + read + test + builder; published to Maven Central |
-| later   | Offline/batch and export/admin as demand warrants  |
+| 1.0     | Stable send + read + test + builder; published to Maven Central (shipped) |
+| post-1.0 | CLI (`ksef send`, `ksef validate`, `ksef list-invoices`); format converters (FA(3) -> PDF/HTML) - demand-permitting |
+| later   | Offline/batch, then export/admin/XAdES - demand-gated sibling modules  |
 
 ## Project structure
 
 ```
 ksef4j/
-├── ksef4j-core/                    # Framework-agnostic client (send + read)
-├── ksef4j-spring-boot-starter/     # Spring Boot autoconfiguration
-├── ksef4j-test/                    # Mock KSeF server / test harness (planned, v0.3)
-├── ksef4j-cli/                     # Command-line tool (planned)
-└── ksef4j-converters/              # FA(3) -> human-readable view (planned)
+├── ksef4j-core/                 # Framework-agnostic client (send + read)
+├── ksef4j-spring-boot-starter/  # Spring Boot autoconfiguration
+└── ksef4j-test/                 # Mock KSeF server / test harness
 ```
+
+Planned post-1.0 (not in the repository yet): `ksef4j-cli` (command-line tool) and `ksef4j-converters` (FA(3) -> PDF/HTML). See the [roadmap](#roadmap).
 
 ## Documentation
 
-Full documentation will be published at the project site once v0.1 is released.
+Documentation lives in this README for 1.0; see the roadmap for what each release added.
 
 For background on KSeF 2.0 itself, see:
 

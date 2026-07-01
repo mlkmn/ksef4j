@@ -1,6 +1,6 @@
 plugins {
     `java-library`
-    `maven-publish`
+    alias(libs.plugins.maven.publish.vanniktech)
 }
 
 description = "WireMock-based mock KSeF server for downstream integration testing"

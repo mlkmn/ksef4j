@@ -27,7 +27,7 @@ class MockKsefSendTest {
       }
 
       assertThat(upo).isNotNull();
-      assertThat(upo.ksefReferenceNumber()).isNotBlank();
+      assertThat(upo.ksefNumber()).isNotBlank();
       // The UPO's documentHash must equal the SHA-256 the client submitted - proving the echo
       // wiring (awaitUpo() would have thrown UpoVerificationException otherwise).
       assertThat(upo.documentHash()).isNotBlank();

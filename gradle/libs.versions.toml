@@ -9,6 +9,7 @@ jaxbRuntime = "4.0.5"
 xjc = "1.9.1"
 spotless = "8.8.0"
 wiremock = "3.13.2"
+mavenPublish = "0.37.0"
 
 [libraries]
 spring-boot-starter = { module = "org.springframework.boot:spring-boot-starter", version.ref = "springBoot" }
@@ -34,3 +35,4 @@ spring-boot = { id = "org.springframework.boot", version.ref = "springBoot" }
 spring-dependency-management = { id = "io.spring.dependency-management", version.ref = "springDependencyManagement" }
 xjc = { id = "com.github.bjornvester.xjc", version.ref = "xjc" }
 spotless = { id = "com.diffplug.spotless", version.ref = "spotless" }
+maven-publish-vanniktech = { id = "com.vanniktech.maven.publish", version.ref = "mavenPublish" }

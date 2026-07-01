@@ -5,7 +5,8 @@ import java.util.List;
 
 /**
  * Internal seam: low-level HTTP calls to KSeF v2. One request / one response per method; no
- * polling, backoff, or orchestration (that is Wave B). Returns wire DTOs from {@link Responses}.
+ * polling, backoff, or orchestration (those live in the session layer). Returns wire DTOs from
+ * {@link Responses}.
  */
 public interface HttpTransport {
 

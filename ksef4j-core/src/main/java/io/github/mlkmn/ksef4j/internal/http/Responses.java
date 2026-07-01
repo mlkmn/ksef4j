@@ -6,6 +6,10 @@ import java.util.List;
 /**
  * Internal: KSeF v2 response wire DTOs. Records map the JSON 1:1; datetimes stay as String (the
  * transport does not interpret them). Not supported API.
+ *
+ * <p>Deliberate cross-module coupling: {@code ksef4j-test}'s {@code QueryWire} depends on the shape
+ * of {@link QueryMetadata} (a compile-time anti-drift decision, see PR #28), so these records are
+ * not freely refactorable despite living under {@code internal}.
  */
 public final class Responses {
 

@@ -2,6 +2,7 @@ package io.github.mlkmn.ksef4j;
 
 import io.github.mlkmn.ksef4j.error.KsefException;
 import io.github.mlkmn.ksef4j.error.UpoTimeoutException;
+import io.github.mlkmn.ksef4j.error.UpoVerificationException;
 
 /**
  * Handle for an in-flight or completed invoice send. Lifecycle:
@@ -23,7 +24,7 @@ public interface SendResult extends AutoCloseable {
   /**
    * KSeF-assigned tracking reference for the invoice, available immediately after {@code send()}.
    * This is the per-invoice reference returned by the send-invoice call, used for correlation; the
-   * final KSeF number assigned during processing is on {@link Upo#ksefReferenceNumber()}.
+   * final KSeF number assigned during processing is on {@link Upo#ksefNumber()}.
    */
   String invoiceReferenceNumber();
 
@@ -33,6 +34,8 @@ public interface SendResult extends AutoCloseable {
    *
    * @throws UpoTimeoutException if the configured timeout is exceeded
    * @throws KsefException if KSeF reports a business error
+   * @throws UpoVerificationException if the UPO's document hash does not match the sent invoice, or
+   *     (when verifyUpoSignature is enabled) the Ministry signature is invalid or untrusted
    */
   Upo awaitUpo();
 

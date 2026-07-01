@@ -15,14 +15,19 @@ public final class AuthScenario {
     this.server = server;
   }
 
-  /** The auth handshake fails (the token-submit step returns HTTP 400). */
-  public void fail() {
+  /** The auth handshake is rejected with the given KSeF error code/message. */
+  public void reject(int code, String message) {
     server.stubFor(
         post(urlEqualTo("/auth/ksef-token"))
             .willReturn(
                 aResponse()
                     .withStatus(400)
                     .withHeader("Content-Type", "application/json")
-                    .withBody(KsefPayloads.errorEnvelope(21301, "Authentication failure"))));
+                    .withBody(KsefPayloads.errorEnvelope(code, message))));
+  }
+
+  /** Convenience for a generic auth rejection. */
+  public void fail() {
+    reject(21301, "Authentication failure");
   }
 }

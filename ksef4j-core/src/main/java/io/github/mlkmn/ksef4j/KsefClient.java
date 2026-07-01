@@ -1,6 +1,11 @@
 package io.github.mlkmn.ksef4j;
 
 import io.github.mlkmn.ksef4j.archive.InvoiceArchive;
+import io.github.mlkmn.ksef4j.error.InvoiceValidationException;
+import io.github.mlkmn.ksef4j.error.KsefAuthenticationException;
+import io.github.mlkmn.ksef4j.error.KsefBusinessException;
+import io.github.mlkmn.ksef4j.error.KsefTransportException;
+import io.github.mlkmn.ksef4j.error.ResultTruncatedException;
 import io.github.mlkmn.ksef4j.internal.archive.FilesystemInvoiceArchive;
 import io.github.mlkmn.ksef4j.internal.archive.NoOpInvoiceArchive;
 import io.github.mlkmn.ksef4j.internal.auth.AuthSession;
@@ -38,6 +43,10 @@ public interface KsefClient {
    * Send a single invoice via the interactive session API.
    *
    * @return a {@link SendResult} handle; the caller should use try-with-resources
+   * @throws InvoiceValidationException if the invoice is incomplete or violates an FA(3) constraint
+   * @throws KsefAuthenticationException if authenticating with KSeF fails
+   * @throws KsefTransportException on a network or protocol failure
+   * @throws KsefBusinessException if KSeF rejects the submission
    */
   SendResult send(Invoice invoice);
 
@@ -45,12 +54,20 @@ public interface KsefClient {
    * Fetch one page of invoice metadata matching {@code query}.
    *
    * @return the page (its {@code invoices()} may be empty; check {@code hasMore()} for more pages)
+   * @throws KsefAuthenticationException if authenticating with KSeF fails
+   * @throws KsefTransportException on a network or protocol failure
+   * @throws KsefBusinessException if KSeF rejects the submission
    */
   InvoiceMetadataPage queryInvoices(InvoiceQuery query);
 
   /**
    * Lazily stream all invoice metadata matching {@code query}, fetching successive pages on demand.
    * Each page is one network call; a remote failure surfaces during terminal iteration.
+   *
+   * @throws KsefAuthenticationException if authenticating with KSeF fails (during iteration)
+   * @throws KsefTransportException on a network or protocol failure (during iteration)
+   * @throws KsefBusinessException if KSeF rejects the request (during iteration)
+   * @throws ResultTruncatedException if a page hits the KSeF result cap during iteration
    */
   Stream<InvoiceMetadata> streamInvoices(InvoiceQuery query);
 
@@ -58,6 +75,10 @@ public interface KsefClient {
    * Download the FA(3) XML of an invoice by its KSeF reference number (e.g. from {@link
    * InvoiceMetadata#ksefNumber()}). Returns the raw plaintext XML bytes. Requires the token's
    * {@code InvoiceRead} permission.
+   *
+   * @throws KsefAuthenticationException if authenticating with KSeF fails
+   * @throws KsefTransportException on a network or protocol failure
+   * @throws KsefBusinessException if KSeF rejects the request
    */
   byte[] downloadInvoice(String ksefNumber);
 

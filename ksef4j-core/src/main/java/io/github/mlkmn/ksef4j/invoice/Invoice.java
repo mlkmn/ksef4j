@@ -14,7 +14,7 @@ import java.util.function.Consumer;
 /**
  * English-named, YAML-friendly invoice DTO. Loaded via {@link #fromYaml(Path)} (or the {@code
  * InputStream} / {@code String} overloads) and translated to FA(3) by {@code InvoiceMapper}
- * (internal). v0.1 schema lives in v0.1.md.
+ * (internal).
  *
  * <p>The compact constructor applies two schema defaults: {@code saleDate} defaults to {@code
  * issueDate}, and {@code currency} defaults to {@code "PLN"}. The {@code items} list is defensively
@@ -142,6 +142,10 @@ public record Invoice(
       return this;
     }
 
+    /**
+     * Replaces the current item list with {@code items} (clears, then adds), unlike the additive
+     * {@link #addItem(Item)}.
+     */
     public Builder items(List<Item> items) {
       this.items.clear();
       if (items != null) {

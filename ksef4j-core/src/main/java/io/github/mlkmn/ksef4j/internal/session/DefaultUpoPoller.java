@@ -108,7 +108,7 @@ public final class DefaultUpoPoller implements UpoPoller {
     byte[] xml = transport.fetchUpo(URI.create(page.downloadUrl()));
     UpoXml.Parsed parsed = UpoXml.parse(xml);
     return new Upo(
-        parsed.ksefReferenceNumber(),
+        parsed.ksefNumber(),
         page.referenceNumber(),
         parsed.issuedAt(),
         parsed.documentHash(),
