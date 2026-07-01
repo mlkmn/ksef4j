@@ -1,0 +1,4 @@
+# Public-key certificates are intentionally tracked here.
+# The root .gitignore blocks *.pem globally (to guard private keys),
+# so we explicitly allow the bundled public certs in this directory.
+!*.pem

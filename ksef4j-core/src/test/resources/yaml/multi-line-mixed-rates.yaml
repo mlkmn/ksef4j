@@ -1,0 +1,30 @@
+invoiceNumber: "FV/2026/05/002"
+issueDate: 2026-05-09
+saleDate: 2026-05-08
+currency: PLN
+seller:
+  nip: "5260250274"
+  name: "Example Sp. z o.o."
+  address:
+    countryCode: PL
+    line1: "ul. Marszalkowska 1/2"
+    line2: "00-000 Warszawa"
+buyer:
+  nip: "1234567890"
+  name: "Customer Sp. z o.o."
+  address:
+    countryCode: PL
+    line1: "ul. Pulawska 100"
+items:
+  - description: "Item A 23%"
+    quantity: 2
+    unitPrice: 100.00
+    vatRate: 23
+  - description: "Item B 8%"
+    quantity: 3
+    unitPrice: 50.00
+    vatRate: 8
+  - description: "Item C 0%"
+    quantity: 1
+    unitPrice: 75.00
+    vatRate: 0

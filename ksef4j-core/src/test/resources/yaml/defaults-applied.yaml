@@ -1,0 +1,19 @@
+invoiceNumber: "FV/2026/05/099"
+issueDate: 2026-05-10
+seller:
+  nip: "5260250274"
+  name: "Example Sp. z o.o."
+  address:
+    countryCode: PL
+    line1: "ul. Marszalkowska 1/2"
+buyer:
+  nip: "1234567890"
+  name: "Customer Sp. z o.o."
+  address:
+    countryCode: PL
+    line1: "ul. Pulawska 100"
+items:
+  - description: "Test"
+    quantity: 1
+    unitPrice: 10.00
+    vatRate: 23

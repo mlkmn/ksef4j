@@ -1,0 +1,36 @@
+{
+  "properties": [
+    {
+      "name": "ksef.environment",
+      "type": "io.github.mlkmn.ksef4j.Environment",
+      "description": "KSeF deployment environment.",
+      "defaultValue": "test"
+    },
+    {
+      "name": "ksef.base-url",
+      "type": "java.net.URI",
+      "description": "Advanced: send KSeF traffic to this base URL instead of the environment default host (e.g. a reverse proxy or gateway fronting the selected environment). The environment still selects the encryption certificate."
+    },
+    {
+      "name": "ksef.auth.token",
+      "type": "java.lang.String",
+      "description": "KSeF API token generated in the MCU after authenticating as the taxpayer."
+    },
+    {
+      "name": "ksef.context.nip",
+      "type": "java.lang.String",
+      "description": "Taxpayer NIP used as the API context."
+    },
+    {
+      "name": "ksef.archive.directory",
+      "type": "java.nio.file.Path",
+      "description": "Directory where sent invoices and UPOs are persisted. Unset uses a no-op archive."
+    },
+    {
+      "name": "ksef.upo.poll-timeout",
+      "type": "java.time.Duration",
+      "description": "How long to wait for the UPO after sending.",
+      "defaultValue": "180s"
+    }
+  ]
+}

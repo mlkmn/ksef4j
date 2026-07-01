@@ -1,0 +1,20 @@
+invoiceNumber: "FV/2026/05/001"
+issueDate: 2026-05-09
+seller:
+  nip: "5260250274"
+  name: "Example Sp. z o.o."
+  address:
+    countryCode: PL
+    line1: "ul. Marszalkowska 1/2"
+    line2: "00-000 Warszawa"
+buyer:
+  nip: "1234567890"
+  name: "Customer Sp. z o.o."
+  address:
+    countryCode: PL
+    line1: "ul. Pulawska 100"
+items:
+  - description: "Consulting services, March 2026"
+    quantity: 1
+    unitPrice: 10000.00
+    vatRate: 23

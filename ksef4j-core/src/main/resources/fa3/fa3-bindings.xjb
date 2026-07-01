@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  XJC binding customization for the bundled FA(3) XSDs.
+
+  The FA(3) main schema (namespace .../wzor/2025/06/25/13775/) and the shared
+  StrukturyDanych / ElementarneTypyDanych base schemas (namespace
+  .../mf/2022/01/05/eD/DefinicjeTypy/) live in different XML namespaces but
+  each define types that collide on simple name (e.g. TAdres). XJC's -p flag
+  ('defaultPackage') would flatten both namespaces into the same Java package,
+  which causes a "class already in use" failure. Pin each schema document to
+  a distinct sub-package instead. ElementarneTypyDanych is xsd:include'd into
+  StrukturyDanych (chameleon include, same namespace), so binding the
+  including schema is sufficient.
+-->
+<jaxb:bindings version="3.0"
+               xmlns:jaxb="https://jakarta.ee/xml/ns/jaxb"
+               xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+    <jaxb:bindings schemaLocation="fa3.xsd" node="/xs:schema">
+        <jaxb:schemaBindings>
+            <jaxb:package name="io.github.mlkmn.ksef4j.internal.fa3.generated"/>
+        </jaxb:schemaBindings>
+    </jaxb:bindings>
+
+    <jaxb:bindings schemaLocation="StrukturyDanych_v10-0E.xsd" node="/xs:schema">
+        <jaxb:schemaBindings>
+            <jaxb:package name="io.github.mlkmn.ksef4j.internal.fa3.generated.etd"/>
+        </jaxb:schemaBindings>
+    </jaxb:bindings>
+
+</jaxb:bindings>

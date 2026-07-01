@@ -1,0 +1,66 @@
+# ---- Gradle ----
+.gradle/
+build/
+gradle-app.setting
+.gradletasknamecache
+
+# ---- Java ----
+*.class
+*.log
+*.ctxt
+.mtj.tmp/
+
+# Package files
+*.jar
+*.war
+*.nar
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# Preserve the Gradle wrapper (must come AFTER *.jar to win)
+!gradle/wrapper/gradle-wrapper.jar
+!gradle/wrapper/gradle-wrapper.properties
+
+# JVM crash logs
+hs_err_pid*
+replay_pid*
+
+# ---- IntelliJ IDEA ----
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+
+# ---- Eclipse / VS Code (in case of cross-IDE use) ----
+.project
+.classpath
+.settings/
+.vscode/
+*.code-workspace
+
+# ---- OS files ----
+.DS_Store
+.AppleDouble
+.LSOverride
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+*~
+.Trash-*
+
+# ---- Secrets — NEVER commit ----
+# KSeF tokens, private keys, signed certificates, environment files
+.env
+.env.*
+!.env.example
+*.pem
+*.p12
+*.pfx
+*.key
+*.keystore
+ksef-token*
+*-token.txt
+secrets/
