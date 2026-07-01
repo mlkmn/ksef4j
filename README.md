@@ -2,6 +2,8 @@
 
 An opinionated, Spring-Boot-first Java library for **KSeF 2.0** — Poland's National e-Invoice System (Krajowy System e-Faktur).
 
+[![Maven Central](https://img.shields.io/maven-central/v/io.github.mlkmn/ksef4j-core?label=Maven%20Central)](https://central.sonatype.com/namespace/io.github.mlkmn)
+[![Build](https://github.com/mlkmn/ksef4j/actions/workflows/build.yml/badge.svg)](https://github.com/mlkmn/ksef4j/actions/workflows/build.yml)
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
 [![Java 21+](https://img.shields.io/badge/Java-21%2B-orange.svg)](https://openjdk.org/projects/jdk/21/)
 [![Spring Boot 4.0+](https://img.shields.io/badge/Spring_Boot-4.0%2B-6db33f.svg)](https://spring.io/projects/spring-boot)
