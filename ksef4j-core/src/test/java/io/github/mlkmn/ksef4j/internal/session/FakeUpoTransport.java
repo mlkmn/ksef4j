@@ -115,4 +115,10 @@ final class FakeUpoTransport implements HttpTransport {
     public List<Responses.CertificateInfo> fetchCertificates() {
         throw new UnsupportedOperationException();
     }
+
+    @Override
+    public Responses.QueryMetadata queryInvoiceMetadata(
+            Requests.QueryMetadata filter, int pageOffset, int pageSize, String accessToken) {
+        throw new UnsupportedOperationException();
+    }
 }

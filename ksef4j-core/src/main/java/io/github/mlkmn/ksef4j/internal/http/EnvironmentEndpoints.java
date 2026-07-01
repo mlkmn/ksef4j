@@ -54,4 +54,8 @@ public final class EnvironmentEndpoints {
     public URI closeSession(String sessionRef) { return URI.create(base + "/sessions/online/" + sessionRef + "/close"); }
 
     public URI certificates() { return URI.create(base + "/security/public-key-certificates"); }
+
+    public URI queryInvoiceMetadata(int pageOffset, int pageSize) {
+        return URI.create(base + "/invoices/query/metadata?pageOffset=" + pageOffset + "&pageSize=" + pageSize);
+    }
 }

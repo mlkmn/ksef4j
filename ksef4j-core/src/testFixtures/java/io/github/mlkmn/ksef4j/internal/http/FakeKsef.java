@@ -19,7 +19,8 @@ import java.util.function.Function;
 /** In-process KSeF stand-in: stub responses per path (single or sequential), capture requests. */
 public final class FakeKsef implements AutoCloseable {
 
-    public record RecordedRequest(String method, String path, Map<String, String> headers, String body) {
+    public record RecordedRequest(String method, String path, String query,
+                                  Map<String, String> headers, String body) {
     }
 
     public record Stub(int status, byte[] body, String contentType) {
@@ -72,8 +73,9 @@ public final class FakeKsef implements AutoCloseable {
         Map<String, String> headers = new HashMap<>();
         exchange.getRequestHeaders().forEach((k, v) -> headers.put(k, String.join(",", v)));
         String path = exchange.getRequestURI().getPath();
+        String query = exchange.getRequestURI().getRawQuery();
         requests.add(new RecordedRequest(
-                exchange.getRequestMethod(), path, headers,
+                exchange.getRequestMethod(), path, query == null ? "" : query, headers,
                 new String(reqBody, StandardCharsets.UTF_8)));
 
         Stub stub = resolve(path);

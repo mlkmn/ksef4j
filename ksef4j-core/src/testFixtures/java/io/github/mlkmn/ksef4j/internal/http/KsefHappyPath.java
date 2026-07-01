@@ -45,17 +45,7 @@ public final class KsefHappyPath {
 
     /** Install all happy-path stubs onto {@code fake}; returns it for chaining. */
     public static FakeKsef install(FakeKsef fake) {
-        fake.stubJson("/auth/challenge", 200,
-                "{\"challenge\":\"abc\",\"timestamp\":\"2026-06-29T10:00:00Z\","
-                        + "\"timestampMs\":1782000000000,\"clientIp\":\"1.2.3.4\"}");
-        fake.stubJson("/auth/ksef-token", 202,
-                "{\"authenticationToken\":{\"token\":\"AUTHJWT\",\"validUntil\":\"" + VALID_UNTIL + "\"},"
-                        + "\"referenceNumber\":\"REF1\"}");
-        fake.stubJson("/auth/REF1", 200,
-                "{\"status\":{\"code\":200,\"description\":\"ok\",\"details\":[]}}");
-        fake.stubJson("/auth/token/redeem", 200,
-                "{\"accessToken\":{\"token\":\"ACC\",\"validUntil\":\"" + VALID_UNTIL + "\"},"
-                        + "\"refreshToken\":{\"token\":\"REF\",\"validUntil\":\"" + VALID_UNTIL + "\"}}");
+        installAuth(fake);
         fake.stubJson("/sessions/online", 200,
                 "{\"referenceNumber\":\"" + SESSION_REF + "\",\"validUntil\":\"" + VALID_UNTIL + "\"}");
         fake.stubJson("/sessions/online/" + SESSION_REF + "/invoices", 202,
@@ -78,6 +68,33 @@ public final class KsefHappyPath {
             return FakeKsef.Stub.bytes(200, xml.getBytes(StandardCharsets.UTF_8), "application/xml");
         });
         return fake;
+    }
+
+    /**
+     * Stub the auth endpoints needed to obtain an access token, then the metadata query endpoint
+     * returning {@code pageJsonBodies} in sequence (the last body is sticky).
+     */
+    public static void stubQueryPages(FakeKsef fake, String... pageJsonBodies) {
+        installAuth(fake);
+        FakeKsef.Stub[] pages = new FakeKsef.Stub[pageJsonBodies.length];
+        for (int i = 0; i < pageJsonBodies.length; i++) {
+            pages[i] = FakeKsef.Stub.json(200, pageJsonBodies[i]);
+        }
+        fake.stubSequence("/invoices/query/metadata", pages);
+    }
+
+    private static void installAuth(FakeKsef fake) {
+        fake.stubJson("/auth/challenge", 200,
+                "{\"challenge\":\"abc\",\"timestamp\":\"2026-06-29T10:00:00Z\","
+                        + "\"timestampMs\":1782000000000,\"clientIp\":\"1.2.3.4\"}");
+        fake.stubJson("/auth/ksef-token", 202,
+                "{\"authenticationToken\":{\"token\":\"AUTHJWT\",\"validUntil\":\"" + VALID_UNTIL + "\"},"
+                        + "\"referenceNumber\":\"REF1\"}");
+        fake.stubJson("/auth/REF1", 200,
+                "{\"status\":{\"code\":200,\"description\":\"ok\",\"details\":[]}}");
+        fake.stubJson("/auth/token/redeem", 200,
+                "{\"accessToken\":{\"token\":\"ACC\",\"validUntil\":\"" + VALID_UNTIL + "\"},"
+                        + "\"refreshToken\":{\"token\":\"REF\",\"validUntil\":\"" + VALID_UNTIL + "\"}}");
     }
 
     private static String submittedInvoiceHash(List<RecordedRequest> requests) {

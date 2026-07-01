@@ -13,6 +13,7 @@ public abstract sealed class KsefException extends RuntimeException
                 UnsupportedInvoiceFeatureException,
                 UpoTimeoutException,
                 UpoVerificationException,
+                ResultTruncatedException,
                 ArchiveException {
 
     private static final long serialVersionUID = 1L;

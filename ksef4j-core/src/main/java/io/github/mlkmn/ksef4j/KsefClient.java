@@ -18,12 +18,16 @@ import io.github.mlkmn.ksef4j.internal.session.ExponentialBackoff;
 import io.github.mlkmn.ksef4j.internal.session.InteractiveSession;
 import io.github.mlkmn.ksef4j.internal.session.UpoPoller;
 import io.github.mlkmn.ksef4j.invoice.Invoice;
+import io.github.mlkmn.ksef4j.query.InvoiceMetadata;
+import io.github.mlkmn.ksef4j.query.InvoiceMetadataPage;
+import io.github.mlkmn.ksef4j.query.InvoiceQuery;
 
 import java.net.URI;
 import java.nio.file.Path;
 import java.security.SecureRandom;
 import java.time.Clock;
 import java.time.Duration;
+import java.util.stream.Stream;
 
 /**
  * High-level KSeF client. Construct via {@link #builder()}. Thread-safe; intended
@@ -37,6 +41,19 @@ public interface KsefClient {
      * @return a {@link SendResult} handle; the caller should use try-with-resources
      */
     SendResult send(Invoice invoice);
+
+    /**
+     * Fetch one page of invoice metadata matching {@code query}.
+     *
+     * @return the page (its {@code invoices()} may be empty; check {@code hasMore()} for more pages)
+     */
+    InvoiceMetadataPage queryInvoices(InvoiceQuery query);
+
+    /**
+     * Lazily stream all invoice metadata matching {@code query}, fetching successive pages on demand.
+     * Each page is one network call; a remote failure surfaces during terminal iteration.
+     */
+    Stream<InvoiceMetadata> streamInvoices(InvoiceQuery query);
 
     /** Entry point for configuring a new client. */
     static Builder builder() {
@@ -166,7 +183,7 @@ public interface KsefClient {
                     : null;
 
             return new DefaultKsefClient(auth, session, poller, resolveArchive(), clock, upoPollTimeout,
-                    signatureCheck);
+                    signatureCheck, transport);
         }
 
         private InvoiceArchive resolveArchive() {

@@ -32,7 +32,7 @@ It builds on top of the patterns established by the official Ministry of Finance
 
 ## Installation
 
-> Not yet published. The coordinates below reflect the planned v0.1 release.
+> Not yet published. The coordinates below reflect the planned first release (1.0.0); see the [roadmap](#roadmap) for what 1.0 includes.
 
 ### Maven
 
@@ -40,7 +40,7 @@ It builds on top of the patterns established by the official Ministry of Finance
 <dependency>
     <groupId>io.github.mlkmn</groupId>
     <artifactId>ksef4j-spring-boot-starter</artifactId>
-    <version>0.1.0</version>
+    <version>1.0.0</version>
 </dependency>
 ```
 
@@ -50,14 +50,14 @@ For non-Spring projects, depend on the core module directly:
 <dependency>
     <groupId>io.github.mlkmn</groupId>
     <artifactId>ksef4j-core</artifactId>
-    <version>0.1.0</version>
+    <version>1.0.0</version>
 </dependency>
 ```
 
 ### Gradle
 
 ```kotlin
-implementation("io.github.mlkmn:ksef4j-spring-boot-starter:0.1.0")
+implementation("io.github.mlkmn:ksef4j-spring-boot-starter:1.0.0")
 ```
 
 ## Quick start
@@ -109,6 +109,38 @@ var client = KsefClient.builder()
 var invoice = Invoice.fromYaml(Path.of("invoice.yaml"));
 var result  = client.send(invoice).awaitUpo();
 ```
+
+### Reading invoices
+
+Query invoice metadata for your NIP, as seller or as buyer, over a required date range:
+
+```java
+import io.github.mlkmn.ksef4j.query.InvoiceQuery;
+import io.github.mlkmn.ksef4j.query.InvoiceMetadata;
+import io.github.mlkmn.ksef4j.query.InvoiceMetadataPage;
+
+import java.time.LocalDate;
+
+// One page (offset-based, full control):
+InvoiceQuery query = InvoiceQuery.asSeller()
+        .issuedBetween(LocalDate.of(2026, 1, 1), LocalDate.of(2026, 1, 31))
+        .counterpartyNip("1234567890")   // optional
+        .pageSize(100)
+        .build();
+
+InvoiceMetadataPage page = ksef.queryInvoices(query);
+for (InvoiceMetadata invoice : page.invoices()) {
+    System.out.println(invoice.ksefNumber() + " " + invoice.grossAmount());
+}
+
+// Or stream every match, paging lazily under the hood:
+ksef.streamInvoices(InvoiceQuery.asBuyer()
+                .receivedBetween(LocalDate.of(2026, 1, 1), LocalDate.of(2026, 1, 31))
+                .build())
+        .forEach(invoice -> System.out.println(invoice.invoiceNumber()));
+```
+
+Metadata is the invoice header (parties, amounts, dates, KSeF number) - not the full FA(3) body. Downloading invoice content is on the roadmap (v0.4). A single query returns at most 10000 records over a date range of at most 3 calendar months; to retrieve more, narrow the date range.
 
 ### UPO result
 
@@ -254,17 +286,23 @@ Full configuration reference for the Spring Boot starter:
 
 | Version | Focus                                              |
 |---------|----------------------------------------------------|
-| v0.1    | MVP — single invoice send, Spring Boot starter, Maven Central release |
-| v0.2    | Type-safe builder, mock server, resilience, CLI    |
-| v0.3+   | Offline mode, observability, converters, XAdES, batch |
+| v0.1    | Send: single invoice, UPO handling, Spring Boot starter (current) |
+| v0.2    | Read: invoice metadata query                       |
+| v0.3    | Test support: mock KSeF server                     |
+| v0.4    | Read: invoice download                             |
+| v0.5    | Type-safe invoice builder                          |
+| 1.0     | Stable send + read + test + builder; published to Maven Central |
+| later   | CLI, converters; offline/batch and export/admin as demand warrants |
 
 ## Project structure
 
 ```
 ksef4j/
-├── ksef4j-core/                    # Framework-agnostic client
+├── ksef4j-core/                    # Framework-agnostic client (send + read)
 ├── ksef4j-spring-boot-starter/     # Spring Boot autoconfiguration
-└── ksef4j-cli/                     # Command-line tool (v0.2+)
+├── ksef4j-test/                    # Mock KSeF server / test harness (planned, v0.3)
+├── ksef4j-cli/                     # Command-line tool (planned)
+└── ksef4j-converters/              # FA(3) -> human-readable view (planned)
 ```
 
 ## Documentation

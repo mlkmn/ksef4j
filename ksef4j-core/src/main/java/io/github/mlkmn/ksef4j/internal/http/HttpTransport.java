@@ -36,4 +36,8 @@ public interface HttpTransport {
 
     /** Fetches the environment's published encryption certificates (public endpoint, no auth). */
     List<Responses.CertificateInfo> fetchCertificates();
+
+    /** Queries invoice metadata; the filter is the JSON body, paging goes in the query string. */
+    Responses.QueryMetadata queryInvoiceMetadata(
+            Requests.QueryMetadata filter, int pageOffset, int pageSize, String accessToken);
 }

@@ -2,9 +2,14 @@ package io.github.mlkmn.ksef4j.spring;
 
 import io.github.mlkmn.ksef4j.Environment;
 import io.github.mlkmn.ksef4j.KsefClient;
+import io.github.mlkmn.ksef4j.SendResult;
 import io.github.mlkmn.ksef4j.archive.ArchiveEntry;
 import io.github.mlkmn.ksef4j.archive.ArchiveKey;
 import io.github.mlkmn.ksef4j.archive.InvoiceArchive;
+import io.github.mlkmn.ksef4j.invoice.Invoice;
+import io.github.mlkmn.ksef4j.query.InvoiceMetadata;
+import io.github.mlkmn.ksef4j.query.InvoiceMetadataPage;
+import io.github.mlkmn.ksef4j.query.InvoiceQuery;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
@@ -14,6 +19,7 @@ import org.springframework.context.annotation.Configuration;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -116,8 +122,21 @@ class KsefAutoConfigurationTest {
 
     @Configuration
     static class CustomClientConfig {
-        static final KsefClient STUB = invoice -> {
-            throw new UnsupportedOperationException();
+        static final KsefClient STUB = new KsefClient() {
+            @Override
+            public SendResult send(Invoice invoice) {
+                throw new UnsupportedOperationException();
+            }
+
+            @Override
+            public InvoiceMetadataPage queryInvoices(InvoiceQuery query) {
+                throw new UnsupportedOperationException();
+            }
+
+            @Override
+            public Stream<InvoiceMetadata> streamInvoices(InvoiceQuery query) {
+                throw new UnsupportedOperationException();
+            }
         };
 
         @Bean

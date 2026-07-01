@@ -28,7 +28,8 @@ class DefaultKsefClientTest {
     private static final Duration POLL_TIMEOUT = Duration.ofSeconds(45);
 
     private DefaultKsefClient client(FakeAuthSession auth, FakeInteractiveSession session, FakeUpoPoller poller) {
-        return new DefaultKsefClient(auth, session, poller, new RecordingArchive(), clock, POLL_TIMEOUT, null);
+        return new DefaultKsefClient(auth, session, poller, new RecordingArchive(), clock, POLL_TIMEOUT, null,
+                new FakeQueryTransport());
     }
 
     @Test

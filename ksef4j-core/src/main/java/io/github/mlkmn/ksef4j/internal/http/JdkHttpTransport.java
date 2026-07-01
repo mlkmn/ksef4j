@@ -124,6 +124,14 @@ public final class JdkHttpTransport implements HttpTransport {
         return List.of(certs);
     }
 
+    @Override
+    public Responses.QueryMetadata queryInvoiceMetadata(
+            Requests.QueryMetadata filter, int pageOffset, int pageSize, String accessToken) {
+        return sendForJson(
+                jsonPost(endpoints.queryInvoiceMetadata(pageOffset, pageSize), filter, accessToken),
+                Responses.QueryMetadata.class);
+    }
+
     // --- shared helpers (reused by the session methods) ---
 
     HttpRequest.Builder request(URI uri, String bearerToken) {

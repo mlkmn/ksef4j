@@ -1,5 +1,6 @@
 package io.github.mlkmn.ksef4j.internal.http;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -62,5 +63,38 @@ public final class Responses {
     // HttpCertificateResolver trusts the parsed certificate's own notBefore/notAfter instead.
     public record CertificateInfo(String certificate, List<String> usage,
                                   String validFrom, String validTo) {
+    }
+
+    // isTruncated is set by KSeF when the result set hit the 10000-record per-query cap.
+    public record QueryMetadata(List<Entry> invoices, boolean hasMore, boolean isTruncated) {
+
+        public record Entry(
+                String ksefNumber,
+                String invoiceNumber,
+                String issueDate,
+                String acquisitionDate,
+                String permanentStorageDate,
+                Party seller,
+                Buyer buyer,
+                BigDecimal netAmount,
+                BigDecimal grossAmount,
+                BigDecimal vatAmount,
+                String currency,
+                String invoiceType,
+                FormCode formCode,
+                String invoiceHash) {
+        }
+
+        public record Party(String nip, String name) {
+        }
+
+        public record Buyer(Identifier identifier, String name) {
+        }
+
+        public record Identifier(String type, String value) {
+        }
+
+        public record FormCode(String systemCode, String schemaVersion, String value) {
+        }
     }
 }
