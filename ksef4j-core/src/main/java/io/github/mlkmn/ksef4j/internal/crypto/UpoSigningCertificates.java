@@ -11,8 +11,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Loads the bundled Ministry of Finance UPO-signing certificate for an environment from {@code
- * /keys/<env>-upo-signing.pem}. TEST and DEMO are bundled; PROD throws until its certificate is
- * captured and added (a zero-code drop-in). Caches per environment.
+ * /keys/<env>-upo-signing.pem}. TEST, DEMO and PROD are all bundled; loading throws {@link
+ * UpoVerificationException} if a certificate is unexpectedly absent. Caches per environment.
  */
 public final class UpoSigningCertificates {
 

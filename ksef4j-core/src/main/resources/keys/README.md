@@ -37,5 +37,8 @@ Separately from the encryption certificates above, the Ministry signs each UPO (
 |---|---|---|---|
 | test-upo-signing.pem | KSeF TEST | Pinned key `UpoSignatureVerifier` trusts for TEST UPOs | 2026-06-29 |
 | demo-upo-signing.pem | KSeF DEMO | Pinned key `UpoSignatureVerifier` trusts for DEMO UPOs | 2026-07-01 |
+| prod-upo-signing.pem | KSeF PROD | Pinned key `UpoSignatureVerifier` trusts for PROD UPOs | 2026-07-01 |
 
-PROD is not yet captured; verifying a PROD UPO throws `UpoVerificationException` until `prod-upo-signing.pem` is added. The captured DEMO certificate shares the same issuer chain (`CN=Certum SMIME RSA CA, O=Asseco Data Systems S.A.`) and 2025-09-29 to 2027-09-29 validity window as the encryption certificates above.
+All three environments are now captured. Each is the leaf extracted from a genuine UPO's `ds:KeyInfo`; the PROD leaf (serial `43CF16451D52663497280106F60DC3A3`) was taken from a real PROD UPO and its signature verified end-to-end against the bundled cert before adding. All three share the same issuer chain (`CN=Certum SMIME RSA CA, O=Asseco Data Systems S.A.`) and 2025-09-29 to 2027-09-29 validity window as the encryption certificates above.
+
+Note: some accounting tools (e.g. iFirma) pretty-print the UPO XML on export. Signature verification is whitespace-sensitive (C14N over the enveloped document), so a re-indented UPO will fail verification even though the certificate is correct; verify against the raw single-line UPO bytes as returned by KSeF.

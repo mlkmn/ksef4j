@@ -1,6 +1,7 @@
 package io.github.mlkmn.ksef4j.smoke;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import io.github.mlkmn.ksef4j.Environment;
@@ -19,40 +20,40 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Locale;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 /**
- * Live happy-path smoke test against the KSeF {@code test} environment. Opt-in: excluded from
- * {@code build}; run with {@code ./gradlew :ksef4j-core:smokeTest} after exporting {@code
- * KSEF_TOKEN} and {@code COMPANY_NIP}. Self-skips when those are absent. For raw HTTP wire detail,
- * rerun with {@code -Djdk.httpclient.HttpClient.log=requests,headers}.
+ * Live happy-path smoke test that sends an invoice and verifies the returned UPO. Opt-in; excluded
+ * from {@code build}; run with {@code ./gradlew :ksef4j-core:smokeTest} after exporting a token and
+ * {@code COMPANY_NIP}. Self-skips when those are absent.
+ *
+ * <p>The target environment is selected by {@code KSEF_ENV} ({@code TEST} | {@code DEMO}, default
+ * {@code TEST}), with the token read from {@code KSEF_TOKEN_<ENV>} falling back to plain {@code
+ * KSEF_TOKEN}. Sending creates a real (non-binding on TEST/DEMO) invoice, so this test refuses to
+ * target {@code PROD}: with {@code KSEF_ENV=PROD} it self-skips rather than send. For raw HTTP wire
+ * detail, rerun with {@code -Djdk.httpclient.HttpClient.log=requests,headers}.
  */
 @Tag("smoke")
 class LiveKsefSmokeTest {
 
   @Test
-  void sends_invoice_to_test_environment_and_receives_upo() {
-    String token = System.getenv("KSEF_TOKEN");
-    String nip = System.getenv("COMPANY_NIP");
-    assumeTrue(
-        token != null && !token.isBlank() && nip != null && !nip.isBlank(),
-        "KSEF_TOKEN and COMPANY_NIP must be set to run the live smoke test");
+  void sends_invoice_to_configured_environment_and_receives_upo() {
+    Setup setup = resolveSetup();
 
-    KsefClient client =
-        KsefClient.builder().environment(Environment.TEST).tokenAuth(token, nip).build();
-
-    Invoice invoice = smokeInvoice(nip);
+    Invoice invoice = smokeInvoice(setup.nip());
     System.out.println(
         "[smoke] sending invoice "
             + invoice.invoiceNumber()
             + " as issuer NIP "
-            + nip
-            + " to KSeF TEST");
+            + setup.nip()
+            + " to KSeF "
+            + setup.environment());
 
     Instant startSend = Instant.now();
     Upo upo;
-    try (SendResult result = client.send(invoice)) {
+    try (SendResult result = setup.client().send(invoice)) {
       String invoiceRef = result.invoiceReferenceNumber();
       long sendMs = Duration.between(startSend, Instant.now()).toMillis();
       System.out.println(
@@ -73,10 +74,12 @@ class LiveKsefSmokeTest {
     assertThat(upo.issuedAt()).isNotNull();
     assertThat(upo.xml()).isNotEmpty();
 
-    // The bundled TEST signing cert must verify the real Ministry-signed UPO.
-    new UpoSignatureVerifier().verify(upo.xml(), Environment.TEST);
+    // The bundled signing cert for the environment must verify the real Ministry-signed UPO.
+    new UpoSignatureVerifier().verify(upo.xml(), setup.environment());
     System.out.println(
-        "[smoke] confirmed: UPO Ministry signature verified against the bundled TEST cert");
+        "[smoke] confirmed: UPO Ministry signature verified against the bundled "
+            + setup.environment()
+            + " cert");
 
     // Observed from the public result.
     System.out.println("[smoke] KSeF reference number: " + upo.ksefReferenceNumber());
@@ -85,7 +88,9 @@ class LiveKsefSmokeTest {
     System.out.println("[smoke] UPO XML size (bytes):  " + upo.xml().length);
     // Inferred from a successful round-trip (logged, not asserted).
     System.out.println(
-        "[smoke] confirmed: TEST public-key cert accepted (authentication succeeded)");
+        "[smoke] confirmed: "
+            + setup.environment()
+            + " public-key cert accepted (authentication succeeded)");
     System.out.println("[smoke] confirmed: invoice encryption accepted by server (send succeeded)");
     System.out.println("[smoke] confirmed: session close succeeded (UPO requires it)");
     System.out.println("[smoke] confirmed: UPO pre-signed URL fetch succeeded");
@@ -94,28 +99,22 @@ class LiveKsefSmokeTest {
   }
 
   @Test
-  void sends_eur_invoice_with_unit_and_pkwiu_to_test_environment_and_receives_upo() {
-    String token = System.getenv("KSEF_TOKEN");
-    String nip = System.getenv("COMPANY_NIP");
-    assumeTrue(
-        token != null && !token.isBlank() && nip != null && !nip.isBlank(),
-        "KSEF_TOKEN and COMPANY_NIP must be set to run the live smoke test");
+  void sends_eur_invoice_with_unit_and_pkwiu_to_configured_environment_and_receives_upo() {
+    Setup setup = resolveSetup();
 
-    KsefClient client =
-        KsefClient.builder().environment(Environment.TEST).tokenAuth(token, nip).build();
-
-    Invoice invoice = eurSmokeInvoice(nip);
+    Invoice invoice = eurSmokeInvoice(setup.nip());
     System.out.println(
         "[smoke-eur] sending EUR invoice "
             + invoice.invoiceNumber()
             + " (rate "
             + invoice.exchangeRate()
             + ") as issuer NIP "
-            + nip
-            + " to KSeF TEST");
+            + setup.nip()
+            + " to KSeF "
+            + setup.environment());
 
     Upo upo;
-    try (SendResult result = client.send(invoice)) {
+    try (SendResult result = setup.client().send(invoice)) {
       System.out.println(
           "[smoke-eur] send accepted; invoiceReferenceNumber=" + result.invoiceReferenceNumber());
       upo = result.awaitUpo();
@@ -134,6 +133,33 @@ class LiveKsefSmokeTest {
     System.out.println(
         "[smoke-eur] confirmed: EUR invoice (KursWalutyZ + P_14_xW + unit + PKWiU) accepted");
   }
+
+  private static Setup resolveSetup() {
+    String envName = System.getenv().getOrDefault("KSEF_ENV", "TEST").toUpperCase(Locale.ROOT);
+    String token =
+        firstNonBlank(System.getenv("KSEF_TOKEN_" + envName), System.getenv("KSEF_TOKEN"));
+    String nip = System.getenv("COMPANY_NIP");
+    assumeTrue(
+        token != null && !token.isBlank() && nip != null && !nip.isBlank(),
+        "KSEF_TOKEN_"
+            + envName
+            + " (or KSEF_TOKEN) and COMPANY_NIP must be set to run the live smoke test");
+
+    Environment environment = Environment.valueOf(envName);
+    assumeFalse(
+        environment == Environment.PROD,
+        "the send smoke never targets PROD (a send is a real, legally-binding invoice); "
+            + "sends run on TEST or DEMO only");
+
+    KsefClient client = KsefClient.builder().environment(environment).tokenAuth(token, nip).build();
+    return new Setup(environment, client, nip);
+  }
+
+  private static String firstNonBlank(String preferred, String fallback) {
+    return (preferred != null && !preferred.isBlank()) ? preferred : fallback;
+  }
+
+  private record Setup(Environment environment, KsefClient client, String nip) {}
 
   private static Invoice smokeInvoice(String sellerNip) {
     Address sellerAddress = new Address("PL", "ul. Marszalkowska 1/2", "00-000 Warszawa", null);

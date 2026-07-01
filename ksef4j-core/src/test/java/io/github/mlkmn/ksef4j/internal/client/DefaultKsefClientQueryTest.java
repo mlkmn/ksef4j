@@ -58,7 +58,7 @@ class DefaultKsefClientQueryTest {
     List<String> all;
     try (Stream<InvoiceMetadata> stream =
         client(transport)
-            .streamInvoices(InvoiceQuery.asSeller().pageSize(2).issuedBetween(FROM, TO).build())) {
+            .streamInvoices(InvoiceQuery.asSeller().pageSize(10).issuedBetween(FROM, TO).build())) {
       all = stream.map(InvoiceMetadata::ksefNumber).toList();
     }
 
@@ -74,7 +74,7 @@ class DefaultKsefClientQueryTest {
 
     Stream<InvoiceMetadata> stream =
         client(transport)
-            .streamInvoices(InvoiceQuery.asSeller().pageSize(2).issuedBetween(FROM, TO).build());
+            .streamInvoices(InvoiceQuery.asSeller().pageSize(10).issuedBetween(FROM, TO).build());
     String first = stream.map(InvoiceMetadata::ksefNumber).findFirst().orElseThrow();
 
     assertThat(first).isEqualTo("A");
@@ -109,7 +109,7 @@ class DefaultKsefClientQueryTest {
   void stream_invoices_throws_when_result_is_truncated() {
     FakeQueryTransport transport = new FakeQueryTransport();
     transport.pages.add(new Responses.QueryMetadata(List.of(entry("A"), entry("B")), false, true));
-    InvoiceQuery query = InvoiceQuery.asSeller().pageSize(2).issuedBetween(FROM, TO).build();
+    InvoiceQuery query = InvoiceQuery.asSeller().pageSize(10).issuedBetween(FROM, TO).build();
 
     assertThatThrownBy(() -> client(transport).streamInvoices(query).forEach(x -> {}))
         .isInstanceOf(ResultTruncatedException.class);

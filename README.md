@@ -76,6 +76,23 @@ ksef:
     nip: ${COMPANY_NIP}
 ```
 
+Build the invoice with the fluent builder (recommended for Java construction; `build()` validates and throws `InvoiceValidationException` if the invoice is incomplete or invalid) or load it from YAML with `Invoice.fromYaml(...)`, which remains the recommended path for config-driven use:
+
+```java
+Invoice invoice =
+    Invoice.builder()
+        .invoiceNumber("FV/2026/1")
+        .issueDate(LocalDate.of(2026, 6, 30))
+        .currency("EUR")
+        .exchangeRate("4.30")
+        .seller(s -> s.nip("5260250274").name("Seller Sp. z o.o.")
+            .address(a -> a.countryCode("PL").line1("ul. Glowna 1")))
+        .buyer(b -> b.nip("1234567890").name("Buyer Sp. z o.o.")
+            .address(a -> a.countryCode("PL").line1("ul. Boczna 2")))
+        .addItem(i -> i.description("Consulting").quantity("10").unitPrice("100.00").vat(23))
+        .build(); // throws InvoiceValidationException if incomplete or invalid
+```
+
 Inject `KsefClient` and send:
 
 ```java
@@ -191,7 +208,7 @@ Before returning the `Upo`, `awaitUpo()` verifies the UPO's `documentHash` again
 
 #### UPO signature verification (opt-in)
 
-ksef4j can also verify the Ministry of Finance's XML-DSig signature on the UPO, confirming the document was genuinely signed by KSeF and has not been tampered with. Trust is established through a pinned Ministry signing certificate bundled in the library (the TEST and DEMO certificates are bundled; the PROD certificate will be added once captured from that environment).
+ksef4j can also verify the Ministry of Finance's XML-DSig signature on the UPO, confirming the document was genuinely signed by KSeF and has not been tampered with. Trust is established through a pinned Ministry signing certificate bundled in the library (the TEST, DEMO, and PROD certificates are all bundled).
 
 To enable automatic verification during `awaitUpo()`, set the opt-in flag on the builder (default is off):
 
@@ -333,13 +350,15 @@ Full configuration reference for the Spring Boot starter:
 
 | Version | Focus                                              |
 |---------|----------------------------------------------------|
-| v0.1    | Send: single invoice, UPO handling, Spring Boot starter (current) |
-| v0.2    | Read: invoice metadata query                       |
-| v0.3    | Test support: mock KSeF server                     |
-| v0.4    | Read: invoice download                             |
-| v0.5    | Type-safe invoice builder                          |
+| v0.1    | Send: single invoice, UPO handling, Spring Boot starter (shipped) |
+| v0.2    | Read: invoice metadata query (shipped)             |
+| v0.3    | Test support: mock KSeF server (shipped)           |
+| v0.4    | Read: invoice download (shipped)                   |
+| v0.5    | Type-safe invoice builder (shipped)                |
+| v0.6    | CLI: `ksef send`, `ksef validate`, `ksef list-invoices` |
+| v0.7    | Format converters (FA(3) -> PDF/HTML and friends)  |
 | 1.0     | Stable send + read + test + builder; published to Maven Central |
-| later   | CLI, converters; offline/batch and export/admin as demand warrants |
+| later   | Offline/batch and export/admin as demand warrants  |
 
 ## Project structure
 

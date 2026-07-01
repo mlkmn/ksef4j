@@ -6,7 +6,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import io.github.mlkmn.ksef4j.SendResult;
 import io.github.mlkmn.ksef4j.Upo;
 import io.github.mlkmn.ksef4j.error.InvoiceValidationException;
-import io.github.mlkmn.ksef4j.error.UnsupportedInvoiceFeatureException;
 import io.github.mlkmn.ksef4j.invoice.Invoice;
 import io.github.mlkmn.ksef4j.invoice.InvoiceFixtures;
 import io.github.mlkmn.ksef4j.invoice.Seller;
@@ -91,7 +90,7 @@ class DefaultKsefClientTest {
             List.of());
 
     assertThatThrownBy(() -> client(auth, session, new FakeUpoPoller(UPO)).send(empty))
-        .isInstanceOf(UnsupportedInvoiceFeatureException.class);
+        .isInstanceOf(InvoiceValidationException.class);
     assertThat(auth.calls).isZero();
     assertThat(session.calls).isZero();
   }

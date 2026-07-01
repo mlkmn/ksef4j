@@ -1,6 +1,8 @@
 package io.github.mlkmn.ksef4j.internal.fa3;
 
 import io.github.mlkmn.ksef4j.error.InvoiceValidationException;
+import io.github.mlkmn.ksef4j.internal.fa3.generated.TKodWaluty;
+import io.github.mlkmn.ksef4j.internal.fa3.generated.etd.TKodKraju;
 import io.github.mlkmn.ksef4j.invoice.Address;
 import io.github.mlkmn.ksef4j.invoice.Buyer;
 import io.github.mlkmn.ksef4j.invoice.Invoice;
@@ -15,9 +17,10 @@ import java.util.regex.Pattern;
  * stateless, thread-safe. Fails fast on the first violation by throwing {@link
  * InvoiceValidationException} with a message naming the offending field and value.
  *
- * <p>Rules cite the FA(3) v1-0E simple type they derive from. Currency, country, items-empty and
- * address-presence checks live in {@link InvoiceMapper} and {@code TKodWaluty.fromValue} / {@code
- * TKodKraju.fromValue}, so they are not duplicated here.
+ * <p>Rules cite the FA(3) v1-0E simple type they derive from. This is the single validation gate
+ * for both {@link InvoiceMapper} and any future invoice builder: currency and country codes are
+ * checked against {@code TKodWaluty.fromValue} / {@code TKodKraju.fromValue}, item lists must be
+ * non-empty, and addresses must be present.
  */
 public final class InvoiceValidator {
 
@@ -34,12 +37,20 @@ public final class InvoiceValidator {
     checkSeller(invoice.seller());
     checkBuyer(invoice.buyer());
     List<Item> items = invoice.items();
+    if (items.isEmpty()) {
+      throw fail("Invoice must have at least one item");
+    }
     for (int i = 0; i < items.size(); i++) {
       checkItem(i + 1, items.get(i));
     }
   }
 
   private static void checkCurrencyAndRate(String currency, BigDecimal exchangeRate) {
+    try {
+      TKodWaluty.fromValue(currency);
+    } catch (IllegalArgumentException e) {
+      throw fail("Unsupported currency code '" + currency + "'");
+    }
     boolean pln = "PLN".equals(currency);
     if (pln) {
       if (exchangeRate != null) {
@@ -97,6 +108,14 @@ public final class InvoiceValidator {
   }
 
   private static void checkAddress(String label, Address address) {
+    if (address == null) {
+      throw fail(label + " is required");
+    }
+    try {
+      TKodKraju.fromValue(address.countryCode());
+    } catch (IllegalArgumentException e) {
+      throw fail(label + " has unsupported country code '" + address.countryCode() + "'");
+    }
     if (address.line1() == null || address.line1().isBlank()) {
       throw fail(label + " line 1 must not be blank");
     }
@@ -120,6 +139,9 @@ public final class InvoiceValidator {
 
   private static void checkItem(int rowNumber, Item item) {
     String prefix = "Item " + rowNumber;
+    if (item.vatRate() == null) {
+      throw fail(prefix + " VAT rate must not be null");
+    }
     if (item.description() == null || item.description().isBlank()) {
       throw fail(prefix + " description must not be blank");
     }

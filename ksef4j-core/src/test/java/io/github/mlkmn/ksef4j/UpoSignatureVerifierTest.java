@@ -9,11 +9,13 @@ import org.junit.jupiter.api.Test;
 class UpoSignatureVerifierTest {
 
   @Test
-  void verify_throws_when_environment_certificate_not_bundled() {
-    byte[] anyXml = "<Potwierdzenie/>".getBytes(StandardCharsets.UTF_8);
+  void verify_with_bundled_prod_cert_reaches_signature_stage() {
+    // PROD's signing certificate is bundled, so verification gets past cert loading and fails on
+    // the missing signature rather than reporting the certificate as absent.
+    byte[] unsigned = "<Potwierdzenie/>".getBytes(StandardCharsets.UTF_8);
 
-    assertThatThrownBy(() -> new UpoSignatureVerifier().verify(anyXml, Environment.PROD))
+    assertThatThrownBy(() -> new UpoSignatureVerifier().verify(unsigned, Environment.PROD))
         .isInstanceOf(UpoVerificationException.class)
-        .hasMessageContaining("not bundled");
+        .hasMessageContaining("no XML signature");
   }
 }

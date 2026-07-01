@@ -86,6 +86,17 @@ class InvoiceQueryTest {
   }
 
   @Test
+  void page_size_below_ksef_minimum_is_rejected() {
+    // KSeF's metadata query rejects page sizes under 10 (live-confirmed on PROD: pageSize 2/3/5
+    // return HTTP 400/21405, pageSize 10 is accepted).
+    assertThatThrownBy(() -> InvoiceQuery.asSeller().issuedBetween(FROM, TO).pageSize(9).build())
+        .isInstanceOf(IllegalArgumentException.class);
+    // The minimum itself is accepted.
+    InvoiceQuery q = InvoiceQuery.asSeller().issuedBetween(FROM, TO).pageSize(10).build();
+    assertThat(q.pageSize()).isEqualTo(10);
+  }
+
+  @Test
   void negative_page_offset_is_rejected() {
     assertThatThrownBy(() -> InvoiceQuery.asSeller().issuedBetween(FROM, TO).pageOffset(-1).build())
         .isInstanceOf(IllegalArgumentException.class);

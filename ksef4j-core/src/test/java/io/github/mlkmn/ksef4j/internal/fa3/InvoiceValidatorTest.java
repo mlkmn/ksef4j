@@ -211,6 +211,108 @@ class InvoiceValidatorTest {
         .hasMessageContaining("50");
   }
 
+  @Test
+  void empty_items_is_rejected() {
+    Invoice base = InvoiceFixtures.singleLineVat23();
+    Invoice empty =
+        new Invoice(
+            base.invoiceNumber(),
+            base.issueDate(),
+            base.saleDate(),
+            base.currency(),
+            base.exchangeRate(),
+            base.seller(),
+            base.buyer(),
+            List.of());
+
+    assertThatThrownBy(() -> InvoiceValidator.validate(empty))
+        .isInstanceOf(InvoiceValidationException.class)
+        .hasMessageContaining("at least one item");
+  }
+
+  @Test
+  void null_seller_address_is_rejected_without_npe() {
+    Invoice base = InvoiceFixtures.singleLineVat23();
+    Seller noAddress = new Seller(base.seller().nip(), base.seller().name(), null);
+    Invoice invoice =
+        new Invoice(
+            base.invoiceNumber(),
+            base.issueDate(),
+            base.saleDate(),
+            base.currency(),
+            base.exchangeRate(),
+            noAddress,
+            base.buyer(),
+            base.items());
+
+    assertThatThrownBy(() -> InvoiceValidator.validate(invoice))
+        .isInstanceOf(InvoiceValidationException.class)
+        .hasMessageContaining("Seller address");
+  }
+
+  @Test
+  void unsupported_currency_code_is_rejected() {
+    Invoice base = InvoiceFixtures.singleLineVat23();
+    Invoice invoice =
+        new Invoice(
+            base.invoiceNumber(),
+            base.issueDate(),
+            base.saleDate(),
+            "XYZ",
+            new BigDecimal("4.30"),
+            base.seller(),
+            base.buyer(),
+            base.items());
+
+    assertThatThrownBy(() -> InvoiceValidator.validate(invoice))
+        .isInstanceOf(InvoiceValidationException.class)
+        .hasMessageContaining("currency");
+  }
+
+  @Test
+  void unsupported_country_code_is_rejected() {
+    Invoice base = InvoiceFixtures.singleLineVat23();
+    Seller badCountry =
+        new Seller(
+            base.seller().nip(),
+            base.seller().name(),
+            new Address("ZZ", "ul. Testowa 1", null, null));
+    Invoice invoice =
+        new Invoice(
+            base.invoiceNumber(),
+            base.issueDate(),
+            base.saleDate(),
+            base.currency(),
+            base.exchangeRate(),
+            badCountry,
+            base.buyer(),
+            base.items());
+
+    assertThatThrownBy(() -> InvoiceValidator.validate(invoice))
+        .isInstanceOf(InvoiceValidationException.class)
+        .hasMessageContaining("country code");
+  }
+
+  @Test
+  void null_item_vat_rate_is_rejected() {
+    Invoice base = InvoiceFixtures.singleLineVat23();
+    Item noVat = new Item("Widget", new BigDecimal("1"), new BigDecimal("10.00"), null, null, null);
+    Invoice invoice =
+        new Invoice(
+            base.invoiceNumber(),
+            base.issueDate(),
+            base.saleDate(),
+            base.currency(),
+            base.exchangeRate(),
+            base.seller(),
+            base.buyer(),
+            List.of(noVat));
+
+    assertThatThrownBy(() -> InvoiceValidator.validate(invoice))
+        .isInstanceOf(InvoiceValidationException.class)
+        .hasMessageContaining("VAT rate");
+  }
+
   // ---- Fixture helpers ----
 
   private static Invoice withCurrencyAndRate(String currency, BigDecimal rate) {

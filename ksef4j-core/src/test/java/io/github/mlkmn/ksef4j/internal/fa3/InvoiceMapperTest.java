@@ -1,23 +1,17 @@
 package io.github.mlkmn.ksef4j.internal.fa3;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import io.github.mlkmn.ksef4j.error.UnsupportedInvoiceFeatureException;
 import io.github.mlkmn.ksef4j.internal.fa3.generated.Faktura;
 import io.github.mlkmn.ksef4j.internal.fa3.generated.TKodFormularza;
 import io.github.mlkmn.ksef4j.internal.fa3.generated.TKodWaluty;
 import io.github.mlkmn.ksef4j.internal.fa3.generated.TNaglowek;
 import io.github.mlkmn.ksef4j.internal.fa3.generated.TRodzajFaktury;
-import io.github.mlkmn.ksef4j.invoice.Address;
-import io.github.mlkmn.ksef4j.invoice.Buyer;
 import io.github.mlkmn.ksef4j.invoice.Invoice;
 import io.github.mlkmn.ksef4j.invoice.InvoiceFixtures;
 import io.github.mlkmn.ksef4j.invoice.Item;
-import io.github.mlkmn.ksef4j.invoice.Seller;
 import io.github.mlkmn.ksef4j.invoice.VatRate;
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
@@ -212,25 +206,6 @@ class InvoiceMapperTest {
     Faktura f = InvoiceMapper.toFaktura(invoice);
 
     assertThat(f.getFa().getFaWiersz().get(0).getPKWiU()).isNull();
-  }
-
-  @Test
-  void empty_items_rejected_with_unsupported_feature_exception() {
-    Address sellerAddress = new Address("PL", "ul. Marszalkowska 1/2", null, null);
-    Address buyerAddress = new Address("PL", "ul. Pulawska 100", null, null);
-    Invoice empty =
-        new Invoice(
-            "FV/2026/05/003",
-            LocalDate.of(2026, 5, 9),
-            null,
-            null,
-            null,
-            new Seller("5260250274", "Example Sp. z o.o.", sellerAddress),
-            new Buyer("1234567890", "Customer Sp. z o.o.", buyerAddress),
-            List.<Item>of());
-    assertThatThrownBy(() -> InvoiceMapper.toFaktura(empty))
-        .isInstanceOf(UnsupportedInvoiceFeatureException.class)
-        .hasMessageContaining("at least one item");
   }
 
   @Test

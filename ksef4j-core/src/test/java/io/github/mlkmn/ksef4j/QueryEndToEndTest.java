@@ -36,7 +36,7 @@ class QueryEndToEndTest {
     InvoiceQuery query =
         InvoiceQuery.asSeller()
             .issuedBetween(LocalDate.of(2026, 1, 1), LocalDate.of(2026, 1, 31))
-            .pageSize(2)
+            .pageSize(10)
             .build();
 
     List<String> ksefNumbers;

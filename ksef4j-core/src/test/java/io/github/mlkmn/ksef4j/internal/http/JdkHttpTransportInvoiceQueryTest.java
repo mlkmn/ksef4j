@@ -10,8 +10,11 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.verification.LoggedRequest;
+import io.github.mlkmn.ksef4j.query.DateType;
+import io.github.mlkmn.ksef4j.query.InvoiceQuery;
 import java.net.URI;
 import java.time.Duration;
+import java.time.LocalDate;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -96,5 +99,66 @@ class JdkHttpTransportInvoiceQueryTest {
 
     assertThatThrownBy(() -> transport.queryInvoiceMetadata(filter, 0, 100, "ACC"))
         .isInstanceOf(io.github.mlkmn.ksef4j.error.KsefBusinessException.class);
+  }
+
+  @Test
+  void seller_counterparty_filter_serializes_as_nested_buyer_identifier() {
+    stubEmptyPage();
+    InvoiceQuery q =
+        InvoiceQuery.asSeller()
+            .issuedBetween(LocalDate.of(2026, 1, 1), LocalDate.of(2026, 1, 31))
+            .counterpartyNip("1234567890")
+            .pageSize(10)
+            .build();
+
+    transport.queryInvoiceMetadata(Requests.QueryMetadata.from(q), 0, 10, "ACC");
+
+    // As seller, the counterparty is the buyer -> nested buyerIdentifier{Nip}, no flat sellerNip.
+    String body =
+        wm.findAll(postRequestedFor(urlPathEqualTo("/invoices/query/metadata")))
+            .get(0)
+            .getBodyAsString();
+    assertThat(body)
+        .contains("Subject1")
+        .contains("buyerIdentifier")
+        .contains("Nip")
+        .contains("1234567890")
+        .doesNotContain("sellerNip");
+  }
+
+  @Test
+  void buyer_counterparty_and_permanent_storage_serialize_over_the_wire() {
+    stubEmptyPage();
+    InvoiceQuery q =
+        InvoiceQuery.asBuyer()
+            .dateRange(
+                DateType.PERMANENT_STORAGE, LocalDate.of(2026, 1, 1), LocalDate.of(2026, 1, 31))
+            .counterpartyNip("5833454124")
+            .pageSize(10)
+            .build();
+
+    transport.queryInvoiceMetadata(Requests.QueryMetadata.from(q), 0, 10, "ACC");
+
+    // As buyer, the counterparty is the seller -> flat sellerNip; date axis is PermanentStorage.
+    String body =
+        wm.findAll(postRequestedFor(urlPathEqualTo("/invoices/query/metadata")))
+            .get(0)
+            .getBodyAsString();
+    assertThat(body)
+        .contains("Subject2")
+        .contains("PermanentStorage")
+        .contains("sellerNip")
+        .contains("5833454124")
+        .doesNotContain("buyerIdentifier");
+  }
+
+  private void stubEmptyPage() {
+    wm.stubFor(
+        post(urlPathEqualTo("/invoices/query/metadata"))
+            .willReturn(
+                aResponse()
+                    .withStatus(200)
+                    .withHeader("Content-Type", "application/json")
+                    .withBody("{\"invoices\":[],\"hasMore\":false}")));
   }
 }

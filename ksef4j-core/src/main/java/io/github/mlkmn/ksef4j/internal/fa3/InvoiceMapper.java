@@ -1,6 +1,5 @@
 package io.github.mlkmn.ksef4j.internal.fa3;
 
-import io.github.mlkmn.ksef4j.error.UnsupportedInvoiceFeatureException;
 import io.github.mlkmn.ksef4j.internal.fa3.generated.Faktura;
 import io.github.mlkmn.ksef4j.internal.fa3.generated.TAdres;
 import io.github.mlkmn.ksef4j.internal.fa3.generated.TKodFormularza;
@@ -35,8 +34,9 @@ import javax.xml.datatype.XMLGregorianCalendar;
  * name), and VAT rates 0/5/8/23 per line. Totals are computed at scale 2 with {@link
  * RoundingMode#HALF_UP}.
  *
- * <p>The mapper rejects empty item lists with {@link UnsupportedInvoiceFeatureException}.
- * Stateless; thread-safe.
+ * <p>Assumes {@code invoice} has already passed {@link InvoiceValidator#validate(Invoice)}: items
+ * non-empty, seller/buyer addresses present, currency and country codes valid. Stateless;
+ * thread-safe.
  */
 public final class InvoiceMapper {
 
@@ -75,10 +75,6 @@ public final class InvoiceMapper {
 
   /** Translate {@code invoice} into the FA(3) {@link Faktura} JAXB tree. */
   public static Faktura toFaktura(Invoice invoice) {
-    if (invoice.items().isEmpty()) {
-      throw new UnsupportedInvoiceFeatureException("Invoice must have at least one item");
-    }
-
     Faktura faktura = new Faktura();
     faktura.setNaglowek(buildNaglowek());
     faktura.setPodmiot1(buildPodmiot1(invoice.seller()));
@@ -104,9 +100,6 @@ public final class InvoiceMapper {
   }
 
   private static Faktura.Podmiot1 buildPodmiot1(Seller seller) {
-    if (seller.address() == null) {
-      throw new UnsupportedInvoiceFeatureException("Seller address is required");
-    }
     TPodmiot1 dane = new TPodmiot1();
     dane.setNIP(seller.nip());
     dane.setNazwa(seller.name());
@@ -118,9 +111,6 @@ public final class InvoiceMapper {
   }
 
   private static Faktura.Podmiot2 buildPodmiot2(Buyer buyer) {
-    if (buyer.address() == null) {
-      throw new UnsupportedInvoiceFeatureException("Buyer address is required");
-    }
     TPodmiot2 dane = new TPodmiot2();
     dane.setNIP(buyer.nip());
     dane.setNazwa(buyer.name());

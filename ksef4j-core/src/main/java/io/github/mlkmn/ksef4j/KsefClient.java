@@ -149,9 +149,9 @@ public interface KsefClient {
 
     /**
      * Also verify each UPO's Ministry signature during {@link SendResult#awaitUpo()}. Default off.
-     * Requires a bundled signing certificate for the environment (TEST and DEMO are bundled; PROD
-     * throws until added). Throws {@link io.github.mlkmn.ksef4j.error.UpoVerificationException} on
-     * a bad signature. The standalone {@link UpoSignatureVerifier} can verify a UPO independently.
+     * Requires a bundled signing certificate for the environment (TEST, DEMO and PROD are all
+     * bundled). Throws {@link io.github.mlkmn.ksef4j.error.UpoVerificationException} on a bad
+     * signature. The standalone {@link UpoSignatureVerifier} can verify a UPO independently.
      */
     public Builder verifyUpoSignature(boolean verify) {
       this.verifyUpoSignature = verify;

@@ -14,6 +14,8 @@ public final class InvoiceQuery {
   /** Maximum permitted span of the date range, in calendar months (the KSeF limit). */
   public static final int MAX_RANGE_MONTHS = 3;
 
+  // KSeF's metadata query rejects page sizes below 10 (HTTP 400/21405); live-confirmed on PROD.
+  private static final int MIN_PAGE_SIZE = 10;
   private static final int MAX_PAGE_SIZE = 250;
   private static final int DEFAULT_PAGE_SIZE = 100;
 
@@ -212,8 +214,9 @@ public final class InvoiceQuery {
                 + " to "
                 + to);
       }
-      if (pageSize < 1 || pageSize > MAX_PAGE_SIZE) {
-        throw new IllegalArgumentException("pageSize must be between 1 and " + MAX_PAGE_SIZE);
+      if (pageSize < MIN_PAGE_SIZE || pageSize > MAX_PAGE_SIZE) {
+        throw new IllegalArgumentException(
+            "pageSize must be between " + MIN_PAGE_SIZE + " and " + MAX_PAGE_SIZE);
       }
       if (pageOffset < 0) {
         throw new IllegalArgumentException("pageOffset must not be negative");
