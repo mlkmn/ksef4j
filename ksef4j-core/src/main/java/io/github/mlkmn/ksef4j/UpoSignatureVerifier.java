@@ -3,7 +3,6 @@ package io.github.mlkmn.ksef4j;
 import io.github.mlkmn.ksef4j.error.UpoVerificationException;
 import io.github.mlkmn.ksef4j.internal.crypto.UpoSigningCertificates;
 import io.github.mlkmn.ksef4j.internal.crypto.UpoXmlSignature;
-
 import java.security.cert.CertificateExpiredException;
 import java.security.cert.CertificateNotYetValidException;
 import java.security.cert.X509Certificate;
@@ -19,16 +18,18 @@ import java.security.cert.X509Certificate;
  */
 public final class UpoSignatureVerifier {
 
-    /** Verify {@code upoXml} against the bundled signing certificate for {@code environment}. */
-    public void verify(byte[] upoXml, Environment environment) {
-        X509Certificate cert = UpoSigningCertificates.load(environment);
-        try {
-            cert.checkValidity();
-        } catch (CertificateExpiredException | CertificateNotYetValidException e) {
-            throw new UpoVerificationException(
-                    "Pinned UPO signing certificate for " + environment
-                            + " is outside its validity window - update the bundled certificate", e);
-        }
-        UpoXmlSignature.verify(upoXml, cert.getPublicKey());
+  /** Verify {@code upoXml} against the bundled signing certificate for {@code environment}. */
+  public void verify(byte[] upoXml, Environment environment) {
+    X509Certificate cert = UpoSigningCertificates.load(environment);
+    try {
+      cert.checkValidity();
+    } catch (CertificateExpiredException | CertificateNotYetValidException e) {
+      throw new UpoVerificationException(
+          "Pinned UPO signing certificate for "
+              + environment
+              + " is outside its validity window - update the bundled certificate",
+          e);
     }
+    UpoXmlSignature.verify(upoXml, cert.getPublicKey());
+  }
 }

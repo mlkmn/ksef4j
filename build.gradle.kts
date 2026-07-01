@@ -1,11 +1,26 @@
 import org.gradle.external.javadoc.StandardJavadocDocletOptions
 
+plugins {
+    alias(libs.plugins.spotless) apply false
+}
+
 allprojects {
     group = "io.github.mlkmn"
     version = "0.0.1-SNAPSHOT"
 }
 
 subprojects {
+    apply(plugin = "com.diffplug.spotless")
+
+    extensions.configure<com.diffplug.gradle.spotless.SpotlessExtension> {
+        java {
+            // Target only hand-written sources; never touch xjc-generated build/** output.
+            target("src/main/java/**/*.java", "src/test/java/**/*.java", "src/testFixtures/java/**/*.java")
+            googleJavaFormat("1.22.0")
+            removeUnusedImports()
+        }
+    }
+
     plugins.withId("java-library") {
         extensions.configure<JavaPluginExtension> {
             toolchain {

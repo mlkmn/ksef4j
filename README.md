@@ -142,6 +142,38 @@ ksef.streamInvoices(InvoiceQuery.asBuyer()
 
 Metadata is the invoice header (parties, amounts, dates, KSeF number) - not the full FA(3) body. Downloading invoice content is on the roadmap (v0.4). A single query returns at most 10000 records over a date range of at most 3 calendar months; to retrieve more, narrow the date range.
 
+### Testing your integration (`ksef4j-test`)
+
+Add the mock module in test scope and point the client at it - no live KSeF needed:
+
+```kotlin
+testImplementation("io.github.mlkmn:ksef4j-test:1.0.0")
+```
+
+```java
+import io.github.mlkmn.ksef4j.test.MockKsefExtension;
+
+@RegisterExtension
+static final MockKsefExtension ksef = MockKsefExtension.create();   // full happy path pre-wired
+
+@Test
+void sends_an_invoice() {
+    KsefClient client = KsefClient.builder()
+            .environment(Environment.TEST)
+            .baseUrl(ksef.baseUrl())
+            .tokenAuth("any-token", "1234567890")
+            .build();
+
+    Upo upo = client.send(Invoice.fromYaml(template)).awaitUpo();   // works out of the box
+
+    // Script alternate outcomes:
+    ksef.onSend().reject(21405, "Validation error");   // -> KsefBusinessException
+    ksef.onQuery().returns(invoiceMetadata1, invoiceMetadata2);
+}
+```
+
+The mock is WireMock-based and pulls WireMock only into your test classpath; `ksef4j-core` itself has no such dependency. UPO signature verification (`verifyUpoSignature(true)`) is not simulated offline.
+
 ### UPO result
 
 `awaitUpo()` blocks until KSeF issues the UPO and returns a `Upo` record:
@@ -318,6 +350,9 @@ For background on KSeF 2.0 itself, see:
 ## Contributing
 
 Contributions, bug reports, and feature requests are welcome. Please open an issue first to discuss substantial changes.
+
+Before submitting a PR, run `./gradlew spotlessApply` to auto-format your code with google-java-format (2-space indent).
+CI runs `spotlessCheck` as part of every build and will fail if formatting is not applied.
 
 ## License
 

@@ -22,5 +22,6 @@ dependencies {
     testImplementation(libs.spring.boot.starter.test)
     testImplementation(libs.assertj.core)
     testImplementation(testFixtures(project(":ksef4j-core")))
+    testImplementation(project(":ksef4j-test"))
     testRuntimeOnly(libs.junit.platform.launcher)
 }

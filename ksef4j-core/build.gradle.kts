@@ -36,6 +36,8 @@ dependencies {
     testImplementation(platform(libs.junit.bom))
     testImplementation(libs.junit.jupiter)
     testImplementation(libs.assertj.core)
+    testImplementation(libs.wiremock)
+    testImplementation(project(":ksef4j-test"))
     testRuntimeOnly(libs.junit.platform.launcher)
 }
 

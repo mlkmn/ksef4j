@@ -1,42 +1,61 @@
 package io.github.mlkmn.ksef4j.internal.http;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.anyRequestedFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.anyUrl;
+import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
+import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import com.github.tomakehurst.wiremock.WireMockServer;
+import com.github.tomakehurst.wiremock.verification.LoggedRequest;
+import java.net.URI;
+import java.time.Duration;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.time.Duration;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
 class JdkHttpTransportInvoiceStatusTest {
 
-    private FakeKsef fake;
-    private JdkHttpTransport transport;
+  private WireMockServer wm;
+  private JdkHttpTransport transport;
 
-    @BeforeEach
-    void setUp() throws Exception {
-        fake = new FakeKsef();
-        transport = new JdkHttpTransport(
-                EnvironmentEndpoints.ofBaseUri(fake.baseUri()), Duration.ofSeconds(5), Duration.ofSeconds(5));
-    }
+  @BeforeEach
+  void setUp() {
+    wm = new WireMockServer(options().dynamicPort());
+    wm.start();
+    transport =
+        new JdkHttpTransport(
+            EnvironmentEndpoints.ofBaseUri(URI.create(wm.baseUrl())),
+            Duration.ofSeconds(5),
+            Duration.ofSeconds(5));
+  }
 
-    @AfterEach
-    void tearDown() {
-        fake.close();
-    }
+  @AfterEach
+  void tearDown() {
+    wm.stop();
+  }
 
-    @Test
-    void fetch_invoice_status_parses_status_and_sends_bearer() {
-        fake.stubJson("/sessions/SESS1/invoices/INV1", 200,
-                "{\"status\":{\"code\":200,\"description\":\"Przyjeto\",\"details\":[]},"
-                        + "\"referenceNumber\":\"INV1\",\"ordinalNumber\":1}");
+  @Test
+  void fetch_invoice_status_parses_status_and_sends_bearer() {
+    wm.stubFor(
+        get(urlEqualTo("/sessions/SESS1/invoices/INV1"))
+            .willReturn(
+                aResponse()
+                    .withStatus(200)
+                    .withHeader("Content-Type", "application/json")
+                    .withBody(
+                        "{\"status\":{\"code\":200,\"description\":\"Przyjeto\",\"details\":[]},"
+                            + "\"referenceNumber\":\"INV1\",\"ordinalNumber\":1}")));
 
-        Responses.InvoiceStatus s = transport.fetchInvoiceStatus("SESS1", "INV1", "ACC");
+    Responses.InvoiceStatus s = transport.fetchInvoiceStatus("SESS1", "INV1", "ACC");
 
-        assertThat(s.status().code()).isEqualTo(200);
-        assertThat(s.status().description()).isEqualTo("Przyjeto");
-        assertThat(fake.requests.get(0).path()).isEqualTo("/sessions/SESS1/invoices/INV1");
-        assertThat(fake.requests.get(0).method()).isEqualTo("GET");
-        assertThat(fake.requests.get(0).headers().get("Authorization")).isEqualTo("Bearer ACC");
-    }
+    assertThat(s.status().code()).isEqualTo(200);
+    assertThat(s.status().description()).isEqualTo("Przyjeto");
+    LoggedRequest req = wm.findAll(anyRequestedFor(anyUrl())).get(0);
+    assertThat(req.getUrl()).isEqualTo("/sessions/SESS1/invoices/INV1");
+    assertThat(req.getMethod().value()).isEqualTo("GET");
+    assertThat(req.getHeader("Authorization")).isEqualTo("Bearer ACC");
+  }
 }
