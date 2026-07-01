@@ -141,6 +141,11 @@ class KsefAutoConfigurationTest {
           public Stream<InvoiceMetadata> streamInvoices(InvoiceQuery query) {
             throw new UnsupportedOperationException();
           }
+
+          @Override
+          public byte[] downloadInvoice(String ksefNumber) {
+            throw new UnsupportedOperationException();
+          }
         };
 
     @Bean

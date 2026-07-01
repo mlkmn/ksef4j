@@ -28,3 +28,14 @@ All six certificates share the same issuer chain and validity window:
 ## Certificate rotation and dynamic refresh
 
 KSeF rotates these certificates; each carries an expiry date (currently 2027-09-29 for all six). `HttpCertificateResolver` (planned) refreshes them dynamically near expiry by fetching the live `/v2/security/public-key-certificates` endpoint, so the bundled files serve as a fast offline default rather than the only source. When KSeF publishes new certificates before the planned dynamic resolver is available, replace the corresponding `.pem` files and re-bundle.
+
+## UPO-signing certificates
+
+Separately from the encryption certificates above, the Ministry signs each UPO (the official confirmation) with an XAdES signature. The opt-in `UpoSignatureVerifier` checks that signature against a pinned signing certificate captured from a genuine UPO per environment. These are leaf certificates extracted from the `ds:KeyInfo` of a real UPO fetched over TLS from each environment; trust is the pinned certificate, and the UPO's embedded KeyInfo is otherwise ignored.
+
+| File | Environment | Purpose in ksef4j | Captured |
+|---|---|---|---|
+| test-upo-signing.pem | KSeF TEST | Pinned key `UpoSignatureVerifier` trusts for TEST UPOs | 2026-06-29 |
+| demo-upo-signing.pem | KSeF DEMO | Pinned key `UpoSignatureVerifier` trusts for DEMO UPOs | 2026-07-01 |
+
+PROD is not yet captured; verifying a PROD UPO throws `UpoVerificationException` until `prod-upo-signing.pem` is added. The captured DEMO certificate shares the same issuer chain (`CN=Certum SMIME RSA CA, O=Asseco Data Systems S.A.`) and 2025-09-29 to 2027-09-29 validity window as the encryption certificates above.

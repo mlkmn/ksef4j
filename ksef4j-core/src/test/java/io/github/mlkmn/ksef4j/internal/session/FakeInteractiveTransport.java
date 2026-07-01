@@ -105,6 +105,11 @@ final class FakeInteractiveTransport implements HttpTransport {
   }
 
   @Override
+  public byte[] downloadInvoice(String ksefNumber, String accessToken) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
   public Responses.QueryMetadata queryInvoiceMetadata(
       Requests.QueryMetadata filter, int pageOffset, int pageSize, String accessToken) {
     throw new UnsupportedOperationException();

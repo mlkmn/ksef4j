@@ -191,7 +191,7 @@ Before returning the `Upo`, `awaitUpo()` verifies the UPO's `documentHash` again
 
 #### UPO signature verification (opt-in)
 
-ksef4j can also verify the Ministry of Finance's XML-DSig signature on the UPO, confirming the document was genuinely signed by KSeF and has not been tampered with. Trust is established through a pinned Ministry signing certificate bundled in the library (the TEST certificate is bundled today; DEMO and PROD certificates will be added once captured from those environments).
+ksef4j can also verify the Ministry of Finance's XML-DSig signature on the UPO, confirming the document was genuinely signed by KSeF and has not been tampered with. Trust is established through a pinned Ministry signing certificate bundled in the library (the TEST and DEMO certificates are bundled; the PROD certificate will be added once captured from that environment).
 
 To enable automatic verification during `awaitUpo()`, set the opt-in flag on the builder (default is off):
 
@@ -261,19 +261,34 @@ The `exchangeRate` field (FA(3) `KursWalutyZ`) is required for non-PLN invoices 
 
 Supported invoice fields: `invoiceNumber`, `issueDate`, `saleDate`, `currency`, `exchangeRate`, `seller`, `buyer`, `items`. Supported item fields: `description`, `quantity`, `unitPrice`, `vatRate`, `unit`, `pkwiu`.
 
-### Running the live smoke test (optional)
+### Running the live smoke tests (optional)
 
-A live happy-path check against the KSeF `test` environment lives in `ksef4j-core` as an opt-in test. It is excluded from the normal build. To run it, export a KSeF test-environment token and the NIP it is scoped to, then invoke the dedicated task:
+Two opt-in live probes live in `ksef4j-core`, tagged `smoke` and excluded from the normal build. Both self-skip when their env vars are absent. Surface their diagnostic output with `--no-daemon` (the `smokeTest` task already streams stdout); for raw HTTP wire detail append `-Djdk.httpclient.HttpClient.log=requests,headers`.
+
+A KSeF token is scoped to one environment and one NIP: a `test` token does not authenticate against `demo` or `prod`. There is no shared token across environments.
+
+**Send happy-path (`LiveKsefSmokeTest`)** sends one invoice and waits for the UPO, printing the KSeF reference number, timings, and contract confirmations. It targets the `test` environment only and never touches demo or production - sending submits a real invoice to the government system, so the target is intentionally not configurable.
 
     export KSEF_TOKEN=...        # a KSeF test-environment token
     export COMPANY_NIP=...       # the NIP the token is scoped to (becomes the invoice issuer)
-    ./gradlew :ksef4j-core:smokeTest --no-daemon
+    ./gradlew :ksef4j-core:smokeTest --tests "*LiveKsefSmokeTest" --no-daemon
+
+**Read query (`LiveQuerySmokeTest`)** is read-only - it queries invoice metadata the NIP is a party to and sends nothing - so it can run against any environment. Select the target with `KSEF_ENV` (`TEST` | `DEMO` | `PROD`, default `TEST`). The token is taken from the environment-specific `KSEF_TOKEN_<ENV>` when set, falling back to plain `KSEF_TOKEN`. Export all three environment tokens once (plus the shared `COMPANY_NIP`) and switch environments with `KSEF_ENV` alone - no swapping between runs:
+
+    export COMPANY_NIP=...       # shared across environments
+    export KSEF_TOKEN_TEST=...
+    export KSEF_TOKEN_DEMO=...
+    export KSEF_TOKEN_PROD=...
+    for env in TEST DEMO PROD; do
+      KSEF_ENV=$env ./gradlew :ksef4j-core:smokeTest --tests "*LiveQuerySmokeTest" --no-daemon
+    done
 
 On Windows PowerShell:
 
-    $env:KSEF_TOKEN="..."; $env:COMPANY_NIP="..."; .\gradlew.bat :ksef4j-core:smokeTest --no-daemon
+    $env:COMPANY_NIP="..."; $env:KSEF_TOKEN_TEST="..."; $env:KSEF_TOKEN_DEMO="..."; $env:KSEF_TOKEN_PROD="..."
+    foreach ($e in 'TEST','DEMO','PROD') { $env:KSEF_ENV=$e; .\gradlew.bat :ksef4j-core:smokeTest --tests "*LiveQuerySmokeTest" --no-daemon }
 
-It sends one invoice and waits for the UPO, printing the KSeF reference number, timings, and contract confirmations. Without the env vars the task self-skips. For raw HTTP wire detail, append `-Djdk.httpclient.HttpClient.log=requests,headers`. The test submits a real invoice to the government test environment; it never touches demo or production.
+If you only have one environment's token, exporting plain `KSEF_TOKEN` and `COMPANY_NIP` and running with the default `KSEF_ENV=TEST` still works.
 
 ## Configuration
 
@@ -296,7 +311,7 @@ Full configuration reference for the Spring Boot starter:
 - Local FA(3) validation against XSD
 - Single-invoice send via interactive session
 - UPO polling with configurable timeout
-- UPO Ministry signature verification (opt-in, `verifyUpoSignature(true)`; TEST cert bundled)
+- UPO Ministry signature verification (opt-in, `verifyUpoSignature(true)`; TEST and DEMO certs bundled)
 - Local archive of sent invoices and UPOs
 - Spring Boot autoconfiguration
 - Environment switching (test, demo, prod)

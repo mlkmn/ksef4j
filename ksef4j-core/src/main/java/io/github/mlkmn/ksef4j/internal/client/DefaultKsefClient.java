@@ -134,6 +134,12 @@ public final class DefaultKsefClient implements KsefClient {
         Spliterators.spliteratorUnknownSize(it, Spliterator.ORDERED | Spliterator.NONNULL), false);
   }
 
+  @Override
+  public byte[] downloadInvoice(String ksefNumber) {
+    String accessToken = auth.accessToken();
+    return transport.downloadInvoice(ksefNumber, accessToken);
+  }
+
   private InvoiceMetadataPage fetchPage(InvoiceQuery query, int pageOffset, String accessToken) {
     Responses.QueryMetadata wire =
         transport.queryInvoiceMetadata(

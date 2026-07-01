@@ -54,6 +54,13 @@ public interface KsefClient {
    */
   Stream<InvoiceMetadata> streamInvoices(InvoiceQuery query);
 
+  /**
+   * Download the FA(3) XML of an invoice by its KSeF reference number (e.g. from {@link
+   * InvoiceMetadata#ksefNumber()}). Returns the raw plaintext XML bytes. Requires the token's
+   * {@code InvoiceRead} permission.
+   */
+  byte[] downloadInvoice(String ksefNumber);
+
   /** Entry point for configuring a new client. */
   static Builder builder() {
     return new Builder();
@@ -142,9 +149,9 @@ public interface KsefClient {
 
     /**
      * Also verify each UPO's Ministry signature during {@link SendResult#awaitUpo()}. Default off.
-     * Requires a bundled signing certificate for the environment (TEST is bundled; DEMO/PROD throw
-     * until added). Throws {@link io.github.mlkmn.ksef4j.error.UpoVerificationException} on a bad
-     * signature. The standalone {@link UpoSignatureVerifier} can verify a UPO independently.
+     * Requires a bundled signing certificate for the environment (TEST and DEMO are bundled; PROD
+     * throws until added). Throws {@link io.github.mlkmn.ksef4j.error.UpoVerificationException} on
+     * a bad signature. The standalone {@link UpoSignatureVerifier} can verify a UPO independently.
      */
     public Builder verifyUpoSignature(boolean verify) {
       this.verifyUpoSignature = verify;

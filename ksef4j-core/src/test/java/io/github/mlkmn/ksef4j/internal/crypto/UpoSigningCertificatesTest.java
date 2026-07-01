@@ -25,10 +25,22 @@ class UpoSigningCertificatesTest {
   }
 
   @Test
-  void demo_signing_certificate_is_not_bundled() {
-    assertThatThrownBy(() -> UpoSigningCertificates.load(Environment.DEMO))
+  void loads_bundled_demo_signing_certificate() {
+    X509Certificate cert = UpoSigningCertificates.load(Environment.DEMO);
+
+    assertThat(cert).isNotNull();
+    assertThat(cert.getSubjectX500Principal().getName()).contains("Ministerstwo");
+    // The bundled pin must currently be within its validity window.
+    Date now = Date.from(Instant.now());
+    assertThat(cert.getNotBefore()).isBeforeOrEqualTo(now);
+    assertThat(cert.getNotAfter()).isAfterOrEqualTo(now);
+  }
+
+  @Test
+  void prod_signing_certificate_is_not_bundled() {
+    assertThatThrownBy(() -> UpoSigningCertificates.load(Environment.PROD))
         .isInstanceOf(UpoVerificationException.class)
         .hasMessageContaining("not bundled")
-        .hasMessageContaining("DEMO");
+        .hasMessageContaining("PROD");
   }
 }

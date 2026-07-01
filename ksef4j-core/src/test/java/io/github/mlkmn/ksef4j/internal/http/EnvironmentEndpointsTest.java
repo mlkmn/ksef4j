@@ -26,6 +26,14 @@ class EnvironmentEndpointsTest {
   }
 
   @Test
+  void builds_download_invoice_path() {
+    EnvironmentEndpoints e = EnvironmentEndpoints.ofBaseUri(URI.create("http://localhost:8080"));
+    assertThat(e.downloadInvoice("7811838663-20260701-0DA443000000-05"))
+        .isEqualTo(
+            URI.create("http://localhost:8080/invoices/ksef/7811838663-20260701-0DA443000000-05"));
+  }
+
+  @Test
   void builds_all_paths_from_base() {
     EnvironmentEndpoints e = EnvironmentEndpoints.ofBaseUri(URI.create("http://localhost:8080"));
     assertThat(e.ksefTokenAuth()).isEqualTo(URI.create("http://localhost:8080/auth/ksef-token"));

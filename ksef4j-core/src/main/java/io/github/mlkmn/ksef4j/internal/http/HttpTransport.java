@@ -41,4 +41,9 @@ public interface HttpTransport {
   /** Queries invoice metadata; the filter is the JSON body, paging goes in the query string. */
   Responses.QueryMetadata queryInvoiceMetadata(
       Requests.QueryMetadata filter, int pageOffset, int pageSize, String accessToken);
+
+  /**
+   * Downloads one invoice's XML by its KSeF reference number. Returns the raw plaintext XML bytes.
+   */
+  byte[] downloadInvoice(String ksefNumber, String accessToken);
 }

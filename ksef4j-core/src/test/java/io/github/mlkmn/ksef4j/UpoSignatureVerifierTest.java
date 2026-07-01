@@ -12,7 +12,7 @@ class UpoSignatureVerifierTest {
   void verify_throws_when_environment_certificate_not_bundled() {
     byte[] anyXml = "<Potwierdzenie/>".getBytes(StandardCharsets.UTF_8);
 
-    assertThatThrownBy(() -> new UpoSignatureVerifier().verify(anyXml, Environment.DEMO))
+    assertThatThrownBy(() -> new UpoSignatureVerifier().verify(anyXml, Environment.PROD))
         .isInstanceOf(UpoVerificationException.class)
         .hasMessageContaining("not bundled");
   }

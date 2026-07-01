@@ -7,6 +7,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -105,6 +106,15 @@ public final class MockKsef implements AutoCloseable {
     server.stubFor(
         post(urlPathEqualTo("/invoices/query/metadata"))
             .willReturn(okJson(QueryWire.toJson(List.of(), false, false))));
+
+    // Invoice download: any KSeF number returns a canned FA(3) XML body.
+    server.stubFor(
+        get(urlPathMatching("/invoices/ksef/.+"))
+            .willReturn(
+                aResponse()
+                    .withStatus(200)
+                    .withHeader("Content-Type", "application/xml")
+                    .withBody(KsefPayloads.DOWNLOADED_INVOICE_XML)));
   }
 
   /** Returns a {@link QueryScenario} for scripting the next query response. */

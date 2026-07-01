@@ -84,4 +84,9 @@ final class FakeQueryTransport implements HttpTransport {
   public List<Responses.CertificateInfo> fetchCertificates() {
     throw new UnsupportedOperationException();
   }
+
+  @Override
+  public byte[] downloadInvoice(String ksefNumber, String accessToken) {
+    throw new UnsupportedOperationException();
+  }
 }

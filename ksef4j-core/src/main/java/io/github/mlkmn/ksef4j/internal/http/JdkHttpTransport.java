@@ -149,6 +149,15 @@ public final class JdkHttpTransport implements HttpTransport {
         Responses.QueryMetadata.class);
   }
 
+  @Override
+  public byte[] downloadInvoice(String ksefNumber, String accessToken) {
+    return sendForBytes(
+        request(endpoints.downloadInvoice(ksefNumber), accessToken)
+            .header("Accept", "application/xml")
+            .GET()
+            .build());
+  }
+
   // --- shared helpers (reused by the session methods) ---
 
   HttpRequest.Builder request(URI uri, String bearerToken) {

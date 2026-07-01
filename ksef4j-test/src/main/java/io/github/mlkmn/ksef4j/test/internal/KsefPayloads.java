@@ -13,6 +13,10 @@ public final class KsefPayloads {
   public static final String KSEF_NUMBER = "5260250274-20260629-010001234567-AB";
   public static final String UPO_ISSUED_AT = "2026-06-29T10:15:30Z";
 
+  /** Canned FA(3) body returned by the mock's default single-invoice download stub. */
+  public static final String DOWNLOADED_INVOICE_XML =
+      "<Faktura xmlns=\"http://crd.gov.pl/wzor/2023/06/29/12648/\"><Naglowek/></Faktura>";
+
   public static final String OPEN_SESSION =
       "{\"referenceNumber\":\"" + SESSION_REF + "\",\"validUntil\":\"" + VALID_UNTIL + "\"}";
   public static final String SEND_INVOICE_ACCEPTED =

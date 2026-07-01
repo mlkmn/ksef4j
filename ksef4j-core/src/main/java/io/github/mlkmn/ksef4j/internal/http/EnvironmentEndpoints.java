@@ -78,4 +78,8 @@ public final class EnvironmentEndpoints {
     return URI.create(
         base + "/invoices/query/metadata?pageOffset=" + pageOffset + "&pageSize=" + pageSize);
   }
+
+  public URI downloadInvoice(String ksefNumber) {
+    return URI.create(base + "/invoices/ksef/" + ksefNumber);
+  }
 }
